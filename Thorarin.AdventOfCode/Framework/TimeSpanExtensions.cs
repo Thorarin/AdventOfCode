@@ -35,7 +35,7 @@ public static class TimeSpanExtensions
             case TimeSpanFormat.Microseconds:
                 return $"{(timeSpan.Ticks/10):0} µs";
             case TimeSpanFormat.MicrosecondsSmall:
-                return $"{(timeSpan.Ticks/10):0.000} µs";
+                return $"{(timeSpan.Ticks/10):0.0} µs";
             default:
                 throw new ArgumentOutOfRangeException(nameof(format));
         }
