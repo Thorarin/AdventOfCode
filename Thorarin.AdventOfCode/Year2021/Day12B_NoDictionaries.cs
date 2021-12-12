@@ -3,13 +3,15 @@
 namespace Thorarin.AdventOfCode.Year2021;
 
 /// <summary>
-/// This solution avoids duplicate paths and thus doesn't need to waste time removing
-/// duplicates. Because of this, it doesn't even keep track of the paths it found :P
+/// This solution is based on <see cref="Day12B_Optimized"/>, but also avoids the use of dictionaries
+/// in the computationally expensive part of the algorithm, saving quite a bit of time.
 /// </summary>
 [Puzzle(Year = 2021, Day = 12, Part = 2)]
-public class Day12B_Optimized : Puzzle
+public class Day12B_NoDictionaries : Puzzle
 {
-    private Dictionary<string, List<string>> _adjacent;
+    private Dictionary<string, List<string>> _adjacentDictionary;
+    private int[][] _adjacent;
+    private int _firstSmallCave = -1;
     private int _pathCount;
 
     public override Output SampleExpectedOutput => 3509;
@@ -17,7 +19,7 @@ public class Day12B_Optimized : Puzzle
 
     public override void ParseInput(string[] fileLines)
     {
-        _adjacent = new();
+        _adjacentDictionary = new();
         
         foreach (var line in fileLines)
         {
@@ -28,36 +30,50 @@ public class Day12B_Optimized : Puzzle
 
     private void Add(string a, string b)
     {
-        if (!_adjacent.TryGetValue(a, out var list))
+        if (!_adjacentDictionary.TryGetValue(a, out var list))
         {
             list = new List<string>();
-            _adjacent.Add(a, list);
+            _adjacentDictionary.Add(a, list);
         }
         if (!list.Contains(b)) list.Add(b);
         
-        if (!_adjacent.TryGetValue(b, out list))
+        if (!_adjacentDictionary.TryGetValue(b, out list))
         {
             list = new List<string>();
-            _adjacent.Add(b, list);
+            _adjacentDictionary.Add(b, list);
         }
         if (!list.Contains(a)) list.Add(a);
     }
 
     public override Output Run()
     {
-        DepthFirstTraversal("start", "end");
+        var keys = _adjacentDictionary.Keys.ToList();
+        keys.Sort((a, b) => a[0].CompareTo(b[0]));
+
+        _adjacent = new int[keys.Count][];
+        for (int k = 0; k < keys.Count; k++)
+        {
+            _adjacent[k] = _adjacentDictionary[keys[k]].Select(x => keys.IndexOf(x)).ToArray();
+            if (_firstSmallCave == -1 && !IsBigCave(keys[k]))
+                _firstSmallCave = k;
+        }
+
+        int start = keys.IndexOf("start");
+        int end = keys.IndexOf("end");
+        
+        DepthFirstTraversal(start, end);
         return _pathCount;
     }
 
-    private void DepthFirstTraversal(string start, string end)
+    private void DepthFirstTraversal(int start, int end)
     {
-        Dictionary<string, int> visited = _adjacent.Keys.ToDictionary(x => x, x => 0);
-        List<string> pathList = new() { start };
+        var visited = new int[_adjacent.Length]; 
+        List<int> pathList = new() { start };
         bool smallCave = false;
         Recurse(start, start, end, visited, pathList, ref smallCave);
     }
     
-    private void Recurse(string pos, string start, string end, Dictionary<string, int> visited, List<string> pathList, ref bool smallCave)
+    private void Recurse(int pos, int start, int end, int[] visited, List<int> pathList, ref bool smallCave)
     {
         if (pos == end)
         {
@@ -69,7 +85,7 @@ public class Day12B_Optimized : Puzzle
         bool isDuplicateVisit = visit == 2 && !IsBigCave(pos);
         if (isDuplicateVisit) smallCave = true;
 
-        foreach (string adjacent in _adjacent[pos])
+        foreach (int adjacent in _adjacent[pos])
         {
             if (CanVisit(adjacent, smallCave))
             {
@@ -82,7 +98,7 @@ public class Day12B_Optimized : Puzzle
         visited[pos]--;
         if (isDuplicateVisit) smallCave = false;
 
-        bool CanVisit(string cave, bool visitedSmallCave)
+        bool CanVisit(int cave, bool visitedSmallCave)
         {
             if (IsBigCave(cave)) return true;
             if (cave == start) return false;
@@ -94,5 +110,10 @@ public class Day12B_Optimized : Puzzle
     private static bool IsBigCave(string cave)
     {
         return char.IsUpper(cave[0]);
-    }      
+    }
+
+    private bool IsBigCave(int cave)
+    {
+        return cave < _firstSmallCave;
+    }
 }

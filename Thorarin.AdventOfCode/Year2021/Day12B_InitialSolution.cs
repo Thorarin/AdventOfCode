@@ -1,5 +1,4 @@
-﻿using MoreLinq;
-using Thorarin.AdventOfCode.Framework;
+﻿using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2021;
 
