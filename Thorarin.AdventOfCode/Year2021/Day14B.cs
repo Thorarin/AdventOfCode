@@ -75,6 +75,9 @@ public class Day14B : Puzzle
 
     private void Insert()
     {
+        // Technically, the clone is not necessary for the problem input, but if there
+        // were any element (i.e. letter) that doesn't occur in any insertion rule,
+        // the algorithm would fail without it.
         var clone = _pairCount.ToDictionary(x => x.Key, x => x.Value);
 
         foreach (var pair in _pairCount)
