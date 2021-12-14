@@ -10,9 +10,9 @@ public class Day03B : Puzzle
     public override Output SampleExpectedOutput => 230;
     public override Output ProblemExpectedOutput => 6_822_109;
 
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
-        _fileLines = fileLines;
+        _fileLines = reader.ToLineArray();
     }
 
     public override Output Run()

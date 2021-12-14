@@ -9,4 +9,7 @@ public class Options
     
     [Option("day", HelpText = "The day to run puzzles for")]
     public int? Day { get; set; }
+    
+    [Option('i', "iterations", Default = 1, HelpText = "The number of times to run the puzzle (for more accurate measurements)")]
+    public int Iterations { get; set; }
 }

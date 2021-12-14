@@ -7,9 +7,9 @@ public abstract class Day01B : Puzzle
 {
     protected List<int> Input { get; private set; }
     
-    public sealed override void ParseInput(string[] fileLines)
+    public sealed override void ParseInput(TextReader reader)
     {
-        Input = fileLines.Select(int.Parse).ToList();        
+        Input = reader.AsLines().Select(int.Parse).ToList();        
     }
     
     public override Output SampleExpectedOutput => 5;

@@ -12,11 +12,11 @@ public class Day12A : Puzzle
     public override Output SampleExpectedOutput => 226;
     public override Output ProblemExpectedOutput => 5254;
 
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
         _adjacent = new();
         
-        foreach (var line in fileLines)
+        foreach (var line in reader.AsLines())
         {
             var split = line.Split('-');
             Add(split[0], split[1]);

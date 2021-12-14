@@ -12,8 +12,9 @@ public class Day11A : Puzzle
     public override Output SampleExpectedOutput => 1656;
     public override Output ProblemExpectedOutput => 1793;
 
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
+        var fileLines = reader.ToLineArray();
         sizeY = fileLines.Length;
         sizeX = fileLines[0].Length; 
         grid = new byte[sizeY, sizeX];

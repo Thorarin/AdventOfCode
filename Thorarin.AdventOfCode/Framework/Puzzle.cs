@@ -1,10 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace Thorarin.AdventOfCode.Framework;
+﻿namespace Thorarin.AdventOfCode.Framework;
 
 public abstract class Puzzle : IPuzzle
 {
-    public abstract void ParseInput(string[] fileLines);
+    public abstract void ParseInput(TextReader reader);
 
     public virtual Output? SampleExpectedOutput => default;
 

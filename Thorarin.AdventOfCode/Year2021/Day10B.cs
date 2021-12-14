@@ -1,6 +1,6 @@
 ﻿using Thorarin.AdventOfCode.Framework;
 
-namespace Test.Year2021;
+namespace Thorarin.AdventOfCode.Year2021;
 
 [Puzzle(Year = 2021, Day = 10, Part = 2)]
 public class Day10B : Puzzle
@@ -21,9 +21,9 @@ public class Day10B : Puzzle
     public override Output SampleExpectedOutput => 288957;
     public override Output ProblemExpectedOutput => 2116639949;
 
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
-        _lines = fileLines;
+        _lines = reader.ToLineArray();
     }
 
     public override Output Run()

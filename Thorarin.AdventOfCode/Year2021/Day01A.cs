@@ -7,9 +7,9 @@ public class Day01A : Puzzle
 {
     private int[] _depths;
     
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
-        _depths = fileLines.Select(Int32.Parse).ToArray();
+        _depths = reader.AsLines().Select(Int32.Parse).ToArray();
     }
 
     public override Output SampleExpectedOutput => 7;

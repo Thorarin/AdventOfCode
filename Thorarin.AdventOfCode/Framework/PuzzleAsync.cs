@@ -2,7 +2,7 @@
 
 public abstract class PuzzleAsync : IPuzzle
 {
-    public abstract void ParseInput(string[] fileLines);
+    public abstract void ParseInput(TextReader reader);
 
     public virtual Output? SampleExpectedOutput => default;
 

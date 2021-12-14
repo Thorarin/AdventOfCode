@@ -1,17 +1,20 @@
 ﻿using CommandLine;
+using Microsoft.Extensions.DependencyInjection;
 using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode;
 
 internal class Program
 {
-    internal static void Main(string[] args)
+    internal static Task Main(string[] args)
     {
-        Parser.Default.ParseArguments<Options>(args).WithParsed(RunWithOptions);
+        return Parser.Default.ParseArguments<Options>(args).WithParsedAsync(RunWithOptions);
     }
 
-    private static void RunWithOptions(Options options)
+    private static async Task RunWithOptions(Options options)
     {
+        var serviceProvider = CreateServiceProvider();
+        
         var puzzleFinder = new PuzzleFinder();
         List<Type> puzzleTypes;
         
@@ -19,10 +22,12 @@ internal class Program
         {
             if (options.Day.HasValue)
             {
-                throw new NotImplementedException();
+                puzzleTypes = puzzleFinder.GetPuzzlesForDay(options.Year.Value, options.Day.Value).ToList();
             }
-
-            puzzleTypes = puzzleFinder.GetPuzzlesForYear(options.Year.Value).ToList();
+            else
+            {
+                puzzleTypes = puzzleFinder.GetPuzzlesForYear(options.Year.Value).ToList();    
+            }
         }
         else
         {
@@ -33,13 +38,22 @@ internal class Program
         Console.WriteLine($"Found {puzzleTypes.Count} puzzles: {string.Join(", ", puzzleTypes.Select(x => x.Name))}");
         Console.WriteLine();
 
-        var runner = new Runner();
+        var runner = new Runner(serviceProvider);
         
         foreach (var puzzleType in puzzleTypes)
         {
-            runner.RunImplementation(puzzleType);
+            await runner.RunImplementation(puzzleType, options.Iterations);
             Console.WriteLine();
         }
+    }
+
+    private static IServiceProvider CreateServiceProvider()
+    {
+        var services = new ServiceCollection();
+        var store = SecretStore.Load("secrets.json");
+        services.AddSingleton(store);
+
+        return services.BuildServiceProvider();
     }
     
 }

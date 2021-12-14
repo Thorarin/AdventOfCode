@@ -11,9 +11,10 @@ public class Day02B : Puzzle
     public override Output SampleExpectedOutput => 900;
     public override Output ProblemExpectedOutput => 1_781_819_478;
 
-    public override void ParseInput(string[] fileLines)
+    public override void ParseInput(TextReader reader)
     {
-        _commands = fileLines
+        _commands = reader
+            .AsLines()
             .Select(line =>
             {
                 var split = line.Split(" ");

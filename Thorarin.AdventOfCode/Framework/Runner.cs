@@ -1,11 +1,32 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Thorarin.AdventOfCode.Framework;
 
 public class Runner
 {
-    public void RunImplementation(Type type)
+    private readonly IServiceProvider _serviceProvider;
+
+    public Runner(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+    
+    public Task RunImplementation(Type type, int iterations)
+    {
+        try
+        {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            return ConsoleRunner(type, iterations);
+        }
+        finally
+        {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Normal;
+        }
+    }
+
+    private async Task ConsoleRunner(Type type, int iterations)
     {
         var attr = type.GetCustomAttribute<PuzzleAttribute>()!;
         Console.WriteLine($"Running {attr.Year}-{attr.Day}-{attr.Part}, implementation: {type.Name}");
@@ -27,51 +48,106 @@ public class Runner
             Console.ResetColor();
         }
         
-        var instance = (Puzzle)Activator.CreateInstance(type)!;
-        var (sampleOutput, _, _) = Run(instance, sampleFileName);
+        var sampleRunResult = await Run(type, sampleFileName, RunType.Sample);
 
         if (compareSampleOutput)
         {
-            WarnOnOutputIncorrect(instance.SampleExpectedOutput, sampleOutput);
+            WarnOnOutputIncorrect(sampleRunResult.Expected, sampleRunResult.Output);
         }
 
         Console.WriteLine("Running using problem data...");
         
-        instance = (Puzzle)Activator.CreateInstance(type)!;    
-        var (output, parse, run) = Run(instance, problemFileName);
+        TimeSpan sumParse = TimeSpan.Zero;
+        TimeSpan sumRun = TimeSpan.Zero;
+        RunResult? lastResult = null;
 
-        var total = parse + run;
-        var format = total.GetHumanReadableFormat();
+        if (iterations < 1) throw new Exception();
+        
+        for (int iteration = 0; iteration < iterations; iteration++)
+        {
+            var runResult = await Run(type, problemFileName, RunType.Problem);
+            lastResult = runResult;
+            sumParse += runResult.ParseDuration;
+            sumRun += runResult.RunDuration;
+        }
 
-        string totalString = total.FormatHumanReadable(format);
-        string parseString = parse.FormatHumanReadable(format).PadLeft(totalString.Length);
-        string runString = run.FormatHumanReadable(format).PadLeft(totalString.Length);
+        if (lastResult != null)
+        {
+            Console.WriteLine($"Outcome: {lastResult.Output}");
+
+            WarnOnOutputIncorrect(lastResult.Expected, lastResult.Output);
+            
+            var averageParse = sumParse / iterations;
+            var averageRun = sumRun / iterations;
+            var total = averageParse + averageRun;
+            var format = total.GetHumanReadableFormat();
+
+            string totalString = total.FormatHumanReadable(format);
+            string parseString = averageParse.FormatHumanReadable(format).PadLeft(totalString.Length);
+            string runString = averageRun.FormatHumanReadable(format).PadLeft(totalString.Length);            
+
+            Console.WriteLine("Time taken:");
+            Console.WriteLine($"  Parse:   {parseString}");
+            Console.WriteLine($"  Run:     {runString}");
+            Console.WriteLine($"  Total:   {totalString}");
+        }
+    }    
+  
+    private Task<RunResult> Run(Type type, string fileName, RunType runType)
+    {
+        if (typeof(Puzzle).IsAssignableFrom(type))
+        {
+            var puzzleInstance = (Puzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
+            //var puzzleInstance = (Puzzle)Activator.CreateInstance(type)!;
+            return Run(puzzleInstance, fileName, runType);
+        }
         
-        Console.WriteLine($"Outcome: {output}");
-        
-        WarnOnOutputIncorrect(instance.ProblemExpectedOutput, output);
-        
-        Console.WriteLine("Time taken:");
-        Console.WriteLine($"  Parse:   {parseString}");
-        Console.WriteLine($"  Run:     {runString}");
-        Console.WriteLine($"  Total:   {totalString}");
+        var instance = (IPuzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
+        //
+        // var instance = (IPuzzle)Activator.CreateInstance(type)!;
+        return Run(instance, fileName, runType);        
     }
 
-    private (Output output, TimeSpan parse, TimeSpan run) Run(Puzzle day, string fileName)
+    private async Task<RunResult> Run(IPuzzle puzzle, string fileName, RunType runType)
     {
-        var fileLines = File.ReadAllLines(fileName);
-
-        var parseStopwatch = Stopwatch.StartNew();
-        day.ParseInput(fileLines);
-        parseStopwatch.Stop();
-
+        Stopwatch parseStopwatch;
+        string fileContent = await File.ReadAllTextAsync(fileName);
+        using (var reader = new StringReader(fileContent))
+        {
+            parseStopwatch = Stopwatch.StartNew();
+            puzzle.ParseInput(reader);
+            parseStopwatch.Stop();
+        }
+        
         var runStopwatch = Stopwatch.StartNew();
-        var output = day.Run();
+        var output = await puzzle.Run();
         runStopwatch.Stop();
 
-        return (output, parseStopwatch.Elapsed, runStopwatch.Elapsed);
-    }
+        var expected = puzzle.GetExpectedOutput(runType);
 
+        return new RunResult(output, parseStopwatch.Elapsed, runStopwatch.Elapsed, expected);                
+    }
+   
+    private async Task<RunResult> Run(Puzzle puzzle, string fileName, RunType runType)
+    {
+        Stopwatch parseStopwatch;
+        string fileContent = await File.ReadAllTextAsync(fileName);
+        using (var reader = new StringReader(fileContent))
+        {
+            parseStopwatch = Stopwatch.StartNew();
+            puzzle.ParseInput(reader);
+            parseStopwatch.Stop();
+        }
+
+        var runStopwatch = Stopwatch.StartNew();
+        var output = puzzle.Run();
+        runStopwatch.Stop();
+
+        var expected = ((IPuzzle)puzzle).GetExpectedOutput(runType);
+
+        return new RunResult(output, parseStopwatch.Elapsed, runStopwatch.Elapsed, expected);
+    }
+    
     private void WarnOnOutputIncorrect(Output? expected, Output actual)
     {
         if (expected != null && !Equals(expected, actual))
@@ -100,4 +176,6 @@ public class Runner
 
         return expected.Value == actual.Value;
     }
+
+    private record RunResult(Output Output, TimeSpan ParseDuration, TimeSpan RunDuration, Output? Expected);
 }

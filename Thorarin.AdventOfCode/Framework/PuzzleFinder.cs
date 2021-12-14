@@ -30,4 +30,12 @@ public class PuzzleFinder
             .OrderBy(grouping => grouping.Key)
             .SelectMany(grouping => grouping);
     }
+
+    public IEnumerable<Type> GetPuzzlesForDay(int year, int day)
+    {
+        return Puzzles
+            .Where(grouping => grouping.Key.Year == year && grouping.Key.Day == day)
+            .OrderBy(grouping => grouping.Key)
+            .SelectMany(grouping => grouping);
+    }
 }

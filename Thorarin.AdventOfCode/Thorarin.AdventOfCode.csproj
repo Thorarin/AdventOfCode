@@ -5,6 +5,9 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Authors>Marcel Veldhuizen</Authors>
+        <PackageLicenseUrl>unlicense</PackageLicenseUrl>
+        <Product>C# Advent of Code solutions</Product>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -18,12 +21,19 @@
       <None Update="Year2021\Inputs\day03-problem.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="secrets.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="CommandLineParser" Version="2.8.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="morelinq" Version="3.3.2" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
+      <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+      <PackageReference Include="Tesseract.Helper" Version="1.2.0" />
     </ItemGroup>
 
 </Project>
