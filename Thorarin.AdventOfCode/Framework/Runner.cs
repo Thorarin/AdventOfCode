@@ -34,7 +34,7 @@ public class Runner
         string sampleFileName = $"Year{attr.Year}\\Inputs\\day{attr.Day:00}-sample.txt";
         string problemFileName = $"Year{attr.Year}\\Inputs\\day{attr.Day:00}-problem.txt";
         
-        Console.WriteLine("Running using sample data...");
+        Console.Write("Running using sample data...  ");
 
         bool compareSampleOutput = true;
         
@@ -49,48 +49,61 @@ public class Runner
         }
         
         var sampleRunResult = await Run(type, sampleFileName, RunType.Sample);
+        Console.WriteLine($"OK ({sampleRunResult.TotalDuration.FormatHumanReadable()})");
 
         if (compareSampleOutput)
         {
             WarnOnOutputIncorrect(sampleRunResult.Expected, sampleRunResult.Output);
         }
 
-        Console.WriteLine("Running using problem data...");
+        Console.Write("Running using problem data... ");
         
         TimeSpan sumParse = TimeSpan.Zero;
         TimeSpan sumRun = TimeSpan.Zero;
-        RunResult? lastResult = null;
+        RunResult firstRunResult = null;
 
         if (iterations < 1) throw new Exception();
         
         for (int iteration = 0; iteration < iterations; iteration++)
         {
             var runResult = await Run(type, problemFileName, RunType.Problem);
-            lastResult = runResult;
             sumParse += runResult.ParseDuration;
             sumRun += runResult.RunDuration;
+
+            if (iteration == 0)
+            {
+                Console.WriteLine($"OK ({runResult.TotalDuration.FormatHumanReadable()})");
+                Console.WriteLine($"Outcome: {runResult.Output}");
+                WarnOnOutputIncorrect(runResult.Expected, runResult.Output);
+                
+                if (iterations > 1)
+                {
+                    firstRunResult = runResult;
+                    int remaining = iterations - 1;
+                    Console.WriteLine($"Running {remaining} additional iterations (expected to take {(runResult.TotalDuration * remaining).FormatHumanReadable()})...");
+                }
+            }
+            else if (firstRunResult != null && !Equals(firstRunResult.Output, runResult.Output))
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"WARNING: output for iteration {iteration} does not match iteration 0!");
+                Console.ResetColor();
+            }
         }
 
-        if (lastResult != null)
-        {
-            Console.WriteLine($"Outcome: {lastResult.Output}");
+        var averageParse = sumParse / iterations;
+        var averageRun = sumRun / iterations;
+        var total = averageParse + averageRun;
+        var format = total.GetHumanReadableFormat();
 
-            WarnOnOutputIncorrect(lastResult.Expected, lastResult.Output);
-            
-            var averageParse = sumParse / iterations;
-            var averageRun = sumRun / iterations;
-            var total = averageParse + averageRun;
-            var format = total.GetHumanReadableFormat();
+        string totalString = total.FormatHumanReadable(format);
+        string parseString = averageParse.FormatHumanReadable(format).PadLeft(totalString.Length);
+        string runString = averageRun.FormatHumanReadable(format).PadLeft(totalString.Length);
 
-            string totalString = total.FormatHumanReadable(format);
-            string parseString = averageParse.FormatHumanReadable(format).PadLeft(totalString.Length);
-            string runString = averageRun.FormatHumanReadable(format).PadLeft(totalString.Length);            
-
-            Console.WriteLine("Time taken:");
-            Console.WriteLine($"  Parse:   {parseString}");
-            Console.WriteLine($"  Run:     {runString}");
-            Console.WriteLine($"  Total:   {totalString}");
-        }
+        Console.WriteLine(iterations > 1 ? "Average time taken:" : "Time taken:");
+        Console.WriteLine($"  Parse:   {parseString}");
+        Console.WriteLine($"  Run:     {runString}");
+        Console.WriteLine($"  Total:   {totalString}");
     }    
   
     private Task<RunResult> Run(Type type, string fileName, RunType runType)
@@ -177,5 +190,8 @@ public class Runner
         return expected.Value == actual.Value;
     }
 
-    private record RunResult(Output Output, TimeSpan ParseDuration, TimeSpan RunDuration, Output? Expected);
+    private record RunResult(Output Output, TimeSpan ParseDuration, TimeSpan RunDuration, Output? Expected)
+    {
+        public TimeSpan TotalDuration => ParseDuration + RunDuration;
+    }
 }

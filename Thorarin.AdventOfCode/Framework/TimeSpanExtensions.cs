@@ -20,7 +20,13 @@ public static class TimeSpanExtensions
         }
         
         return TimeSpanFormat.MicrosecondsSmall;
-    } 
+    }
+
+    public static string FormatHumanReadable(this TimeSpan timeSpan)
+    {
+        var format = GetHumanReadableFormat(timeSpan);
+        return timeSpan.FormatHumanReadable(format);
+    }
     
     public static string FormatHumanReadable(this TimeSpan timeSpan, TimeSpanFormat format)
     {
