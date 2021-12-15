@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using MoreLinq;
-using MoreLinq.Extensions;
+using Thorarin.AdventOfCode.Extensions;
 using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2021;
@@ -26,7 +25,7 @@ public class Day14B : Puzzle
 
         for (int i = 0; i < polymer.Length - 1; i++)
         {
-            IncrementPair(_pairCount, (polymer[i], polymer[i + 1]), 1);
+            _pairCount.Increment((polymer[i], polymer[i + 1]), 1);
         }
         
         reader.ReadLine();
@@ -54,12 +53,8 @@ public class Day14B : Puzzle
             new Dictionary<char, long>(),
             (acc, next) =>
             {
-                acc.TryGetValue(next.Key.Item1, out long count1);
-                acc[next.Key.Item1] = count1 + next.Value;
-
-                acc.TryGetValue(next.Key.Item2, out long count2);
-                acc[next.Key.Item2] = count2 + next.Value;
-                
+                acc.Increment(next.Key.Item1, next.Value);
+                acc.Increment(next.Key.Item2, next.Value);
                 return acc;
             });
 
@@ -89,18 +84,12 @@ public class Day14B : Puzzle
                 var pairB = (insert, pair.Key.Item2);
                 
                 // Update the counts accordingly.
-                IncrementPair(clone, pair.Key, -pair.Value);
-                IncrementPair(clone, pairA, pair.Value);
-                IncrementPair(clone, pairB, pair.Value);
+                clone[pair.Key] -= pair.Value;
+                clone.Increment(pairA, pair.Value);
+                clone.Increment(pairB, pair.Value);
             }
         }
 
         _pairCount = clone;
     }
-
-    private void IncrementPair(Dictionary<(char, char), long> dic, (char, char) pair, long amount)
-    {
-        dic.TryGetValue(pair, out long current);
-        dic[pair] = current + amount;
-    } 
 }
