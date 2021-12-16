@@ -100,7 +100,7 @@ public class Runner
         string parseString = averageParse.FormatHumanReadable(format).PadLeft(totalString.Length);
         string runString = averageRun.FormatHumanReadable(format).PadLeft(totalString.Length);
 
-        Console.WriteLine(iterations > 1 ? "Average time taken:" : "Time taken:");
+        Console.WriteLine(iterations > 1 ? $"Average time taken over {iterations} iterations:" : "Time taken:");
         Console.WriteLine($"  Parse:   {parseString}");
         Console.WriteLine($"  Run:     {runString}");
         Console.WriteLine($"  Total:   {totalString}");

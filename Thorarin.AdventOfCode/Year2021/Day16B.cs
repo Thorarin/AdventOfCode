@@ -9,7 +9,9 @@ public class Day16B : Puzzle
 {
     private BitReader _reader;
 
-    public override Output? SampleExpectedOutput => 46;
+    public override Output SampleExpectedOutput => 46;
+
+    public override Output ProblemExpectedOutput => 912_901_337_844;
 
     public override void ParseInput(TextReader reader)
     {
