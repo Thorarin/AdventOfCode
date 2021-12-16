@@ -21,10 +21,7 @@ public class Day16A : Puzzle
         _versions = new List<int>();
         try
         {
-            while (!_reader.End)
-            {
-                ReadPacket();
-            }
+            ReadPacket();
         }
         catch (EndOfStreamException)
         {

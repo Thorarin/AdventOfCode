@@ -35,12 +35,25 @@ public abstract class Day15Base : Puzzle
         
         bool change = SweepDown();
 
+        SweepDiagonal();
+
         while (change)
         {
             change = SweepRight();
             change |= SweepDown();
+            change |= SweepDiagonal();
             change |= SweepUp();
             change |= SweepLeft();
+            
+            //Console.WriteLine("*");
+            
+            // if (!change)
+            // {
+            //     //change = SweepDiagonal();
+            //     change |= SweepRight();
+            //     change |= SweepDown();
+            // }
+
         }
         
         return _minCost[_width - 1, _height - 1];
@@ -83,5 +96,48 @@ public abstract class Day15Base : Puzzle
         }
 
         return change;
-    }    
+    }
+
+    private bool SweepDiagonal()
+    {
+        bool changes = false;
+        for (int d = 1; d < _width; d++)
+        {
+            for (int x = 0; x <= d; x++)
+            {
+                int y = d - x;
+
+                int? c = null;
+                if (x > 1)
+                {
+                    c = _minCost[x - 1, y] + _grid[x, y];
+                }
+
+                // if (x < _width - 1)
+                // {
+                //     c = Math.Min(c ?? int.MaxValue, _minCost[x + 1, y] + _grid[x, y]);
+                // }
+                
+                if (y > 0)
+                {
+                    c = Math.Min(c ?? int.MaxValue, _minCost[x, y - 1] + _grid[x, y]);
+                }
+
+                // if (y < _height - 1)
+                // {
+                //     c = Math.Min(c ?? int.MaxValue, _minCost[x, y + 1] + _grid[x, y]);
+                // }
+                
+                if (c.HasValue && c.Value < _minCost[x, y])
+                {
+                    _minCost[x, y] = c.Value;
+                    changes = true;
+                }
+            }
+        }
+        
+        return changes;
+    }
+    
+    
 }
