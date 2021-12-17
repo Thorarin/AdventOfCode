@@ -30,9 +30,10 @@ public class Runner
     {
         var attr = type.GetCustomAttribute<PuzzleAttribute>()!;
         Console.WriteLine($"Running {attr.Year}-{attr.Day}-{attr.Part}, implementation: {type.Name}");
-        
-        string sampleFileName = $"Year{attr.Year}\\Inputs\\day{attr.Day:00}-sample.txt";
-        string problemFileName = $"Year{attr.Year}\\Inputs\\day{attr.Day:00}-problem.txt";
+
+        string path = $"Year{attr.Year}\\Inputs";
+        string sampleFileName = Path.Combine(path, $"day{attr.Day:00}-sample.txt");
+        string problemFileName = Path.Combine(path, $"day{attr.Day:00}-problem.txt");
         
         Console.Write("Running using sample data...  ");
 
@@ -91,6 +92,19 @@ public class Runner
             }
         }
 
+        foreach (var extras in DiscoverExtraInputs(type))
+        {
+            Console.Write($"Running using extra data ({extras.FileName})... ");
+            string filePath = Path.Combine(path, extras.FileName); 
+            var runResult = await Run(type, filePath, extras.Expected);
+            Console.WriteLine($"OK ({runResult.TotalDuration.FormatHumanReadable()})");
+            WarnOnOutputIncorrect(runResult.Expected, runResult.Output);
+            if (runResult.Expected == null)
+            {
+                Console.WriteLine($"Extra: {runResult.Output}");
+            }
+        }
+        
         var averageParse = sumParse / iterations;
         var averageRun = sumRun / iterations;
         var total = averageParse + averageRun;
@@ -104,24 +118,51 @@ public class Runner
         Console.WriteLine($"  Parse:   {parseString}");
         Console.WriteLine($"  Run:     {runString}");
         Console.WriteLine($"  Total:   {totalString}");
-    }    
+    }
+
+    private List<(string FileName, Output? Expected)> DiscoverExtraInputs(Type type)
+    {
+        var instance = ActivatorUtilities.CreateInstance(_serviceProvider, type);
+            
+        var bla = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(pi => typeof(Output).IsAssignableFrom(pi.PropertyType))
+            .Select(pi => (pi, input: pi.GetCustomAttribute<InputAttribute>()))
+            .Where(x => x.input != null)
+            .ToList();
+
+        return bla.Select(x => (x.input!.FileName, (Output?)x.pi.GetValue(instance))).ToList();
+    }
   
     private Task<RunResult> Run(Type type, string fileName, RunType runType)
     {
         if (typeof(Puzzle).IsAssignableFrom(type))
         {
             var puzzleInstance = (Puzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
-            //var puzzleInstance = (Puzzle)Activator.CreateInstance(type)!;
-            return Run(puzzleInstance, fileName, runType);
+            return Run(puzzleInstance, fileName, GetExpectedOutput(puzzleInstance));
         }
         
         var instance = (IPuzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
-        //
-        // var instance = (IPuzzle)Activator.CreateInstance(type)!;
-        return Run(instance, fileName, runType);        
+        return Run(instance, fileName, GetExpectedOutput(instance));
+        
+        Output? GetExpectedOutput(IPuzzle puzzle)
+        {
+            return puzzle.GetExpectedOutput(runType);
+        }
     }
+    
+    private Task<RunResult> Run(Type type, string fileName, Output? expected)
+    {
+        if (typeof(Puzzle).IsAssignableFrom(type))
+        {
+            var puzzleInstance = (Puzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
+            return Run(puzzleInstance, fileName, expected);
+        }
+        
+        var instance = (IPuzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
+        return Run(instance, fileName, expected);
+    }    
 
-    private async Task<RunResult> Run(IPuzzle puzzle, string fileName, RunType runType)
+    private async Task<RunResult> Run(IPuzzle puzzle, string fileName, Output? expected)
     {
         Stopwatch parseStopwatch;
         string fileContent = await File.ReadAllTextAsync(fileName);
@@ -136,12 +177,10 @@ public class Runner
         var output = await puzzle.Run();
         runStopwatch.Stop();
 
-        var expected = puzzle.GetExpectedOutput(runType);
-
         return new RunResult(output, parseStopwatch.Elapsed, runStopwatch.Elapsed, expected);                
     }
    
-    private async Task<RunResult> Run(Puzzle puzzle, string fileName, RunType runType)
+    private async Task<RunResult> Run(Puzzle puzzle, string fileName, Output? expected)
     {
         Stopwatch parseStopwatch;
         string fileContent = await File.ReadAllTextAsync(fileName);
@@ -155,8 +194,6 @@ public class Runner
         var runStopwatch = Stopwatch.StartNew();
         var output = puzzle.Run();
         runStopwatch.Stop();
-
-        var expected = ((IPuzzle)puzzle).GetExpectedOutput(runType);
 
         return new RunResult(output, parseStopwatch.Elapsed, runStopwatch.Elapsed, expected);
     }

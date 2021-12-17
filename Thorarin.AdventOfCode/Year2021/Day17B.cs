@@ -14,7 +14,10 @@ public class Day17B : Puzzle
     public override Output SampleExpectedOutput => 112;
 
     public override Output ProblemExpectedOutput => 2040;
-
+    
+    [Input("day17-extra.txt")]
+    public Output ExtraExpectedOutput => new Answer(820, MaxY: 66, DeltaY: 11); 
+    
     public override void ParseInput(TextReader reader)
     {
         var line = reader.ReadLine()!;
@@ -39,9 +42,10 @@ public class Day17B : Puzzle
     public override Output Run()
     {
         int found = 0;
-        var possibleX = Enumerable.Range((int)Math.Sqrt(_x1 * 2), _x2).Where(SimulateX).ToList();
-        var possibleY = Enumerable.Range(_y2, 500).Where(SimulateY).ToList();
+        var possibleX = Enumerable.Range(MathEx.InverseTermialUnsafe(_x1), _x2).Where(SimulateX).ToList();
+        var possibleY = Enumerable.Range(_y2, -_y2 - _y2).Where(SimulateY).ToList();
 
+        int maxDeltaY = int.MinValue;
         foreach (int dX in possibleX)
         {
             foreach (int dY in possibleY)
@@ -49,11 +53,14 @@ public class Day17B : Puzzle
                 if (Simulate(dX, dY))
                 {
                     found++;
+                    maxDeltaY = Math.Max(maxDeltaY, dY);
                 }
             }
         }
-        
-        return found;
+
+        int maxY = MathEx.Termial(maxDeltaY);
+
+        return  new Answer(found, maxY, maxDeltaY);
     }
 
     private bool Simulate(int dX, int dY)
@@ -106,4 +113,6 @@ public class Day17B : Puzzle
 
         return false;
     }
+
+    private record Answer(long Value, int MaxY, int DeltaY) : Output(Value);
 }

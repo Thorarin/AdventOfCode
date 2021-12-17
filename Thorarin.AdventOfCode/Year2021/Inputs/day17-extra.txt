@@ -1,0 +1,15 @@
+﻿target area: x=352..377, y=-49..-30
+
+https://www.reddit.com/r/adventofcode/comments/rid0g3/2021_day_17_part_1_an_input_that_might_break_your/
+
+Consider the following input:
+target area: x=352..377, y=-49..-30
+
+The solution:
+66, and not 1176 = 49*48/2
+
+The reason why the simplified calculation does not work:
+With the given inputs there is no such initial horizontal velocity which will cause the probe's x coordinate to settle
+in the target area - that is, even if there is a step when the x coord matches the target area's x range, a few steps
+later the probe will leave that range. This puts a restriction on the y component of the initial velocity as well,
+as you have to guarantee that the y and x coords will be in the target area simultaneously.
