@@ -39,7 +39,7 @@ public class Day17B : Puzzle
     public override Output Run()
     {
         int found = 0;
-        var possibleX = Enumerable.Range((int)Math.Sqrt(_x1), _x2).Where(SimulateX).ToList();
+        var possibleX = Enumerable.Range((int)Math.Sqrt(_x1 * 2), _x2).Where(SimulateX).ToList();
         var possibleY = Enumerable.Range(_y2, 500).Where(SimulateY).ToList();
 
         foreach (int dX in possibleX)
