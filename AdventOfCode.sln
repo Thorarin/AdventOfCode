@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thorarin.AdventOfCode", "Thorarin.AdventOfCode\Thorarin.AdventOfCode.csproj", "{83FBF0CC-E2C9-425F-A4AD-15072581A9D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{2EF5A5A2-A205-4D29-A1CA-F64C6BCD0F63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thorarin.AdventOfCode.Tests", "Thorarin.AdventOfCode.Tests\Thorarin.AdventOfCode.Tests.csproj", "{80FFCCC9-843C-47EE-9F4C-761C2575F170}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{83FBF0CC-E2C9-425F-A4AD-15072581A9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83FBF0CC-E2C9-425F-A4AD-15072581A9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83FBF0CC-E2C9-425F-A4AD-15072581A9D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EF5A5A2-A205-4D29-A1CA-F64C6BCD0F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EF5A5A2-A205-4D29-A1CA-F64C6BCD0F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EF5A5A2-A205-4D29-A1CA-F64C6BCD0F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EF5A5A2-A205-4D29-A1CA-F64C6BCD0F63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80FFCCC9-843C-47EE-9F4C-761C2575F170}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80FFCCC9-843C-47EE-9F4C-761C2575F170}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80FFCCC9-843C-47EE-9F4C-761C2575F170}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80FFCCC9-843C-47EE-9F4C-761C2575F170}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

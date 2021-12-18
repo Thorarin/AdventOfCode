@@ -17,8 +17,12 @@ internal class Program
         
         var puzzleFinder = new PuzzleFinder();
         List<Type> puzzleTypes;
-        
-        if (options.Year.HasValue)
+
+        if (!string.IsNullOrEmpty(options.Implementation))
+        {
+            puzzleTypes = puzzleFinder.GetByImplementationName(options.Implementation).ToList();
+        }
+        else if (options.Year.HasValue)
         {
             if (options.Day.HasValue)
             {

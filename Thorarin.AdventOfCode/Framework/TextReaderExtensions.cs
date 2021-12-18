@@ -1,4 +1,6 @@
-﻿namespace Thorarin.AdventOfCode.Framework;
+﻿using System.Text;
+
+namespace Thorarin.AdventOfCode.Framework;
 
 public static class TextReaderExtensions
 {
@@ -32,5 +34,25 @@ public static class TextReaderExtensions
             if (line.Length == 0) yield break;
             yield return line;
         }
+    }
+
+    public static string? ReadUntil(this TextReader reader, char until)
+    {
+        StringBuilder sb = new StringBuilder();
+        while (true)
+        {
+            int ch = reader.Read();
+            if (ch == -1) break;
+            if (ch == until)
+            {
+                return sb.ToString();
+            }
+            sb.Append((char)ch);
+        }
+        if (sb.Length > 0)
+        {
+            return sb.ToString();
+        }
+        return null;        
     }
 }

@@ -38,4 +38,12 @@ public class PuzzleFinder
             .OrderBy(grouping => grouping.Key)
             .SelectMany(grouping => grouping);
     }
+
+    public IEnumerable<Type> GetByImplementationName(string implementationName)
+    {
+        return Puzzles
+            .OrderBy(grouping => grouping.Key)
+            .SelectMany(grouping => grouping)
+            .Where(x => x.Name == implementationName);
+    }
 }
