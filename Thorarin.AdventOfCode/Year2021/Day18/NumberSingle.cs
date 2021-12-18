@@ -1,37 +1,34 @@
 ﻿namespace Thorarin.AdventOfCode.Year2021.Day18;
 
-public class SingleNumber : INumber
+internal class NumberSingle : NumberNode
 {
-    public int Number { get; set; }
-
-    public SingleNumber(int number)
+    public NumberSingle(int number)
     {
         Number = number;
     }
-        
-    public int Magnitude()
+    
+    public int Number { get; set; }
+   
+    protected internal override int GetMagnitude()
     {
         return Number;
     }
 
-    public INumber Add(INumber other)
+    protected internal override NumberNode Clone()
     {
-        throw new NotImplementedException();
+        return new NumberSingle(Number);
     }
 
-    public INumber Reduce()
-    {
-        throw new NotImplementedException();
-    }
-
-    public NumberPair? Parent { get; set; }
-    public bool Split()
+    protected internal override bool Split()
     {
         if (Number < 10) return false;
-
         var (quotient, remainder) = Math.DivRem(Number, 2);
+        var replacement = new NumberPair(new NumberSingle(quotient), new NumberSingle(quotient + remainder));
 
-        var replacement = new NumberPair(new SingleNumber(quotient), new SingleNumber(quotient + remainder));
+        if (Parent == null)
+        {
+            throw new InvalidOperationException("Expected a parent NumberPair");
+        }
 
         if (Parent.Left == this)
         {

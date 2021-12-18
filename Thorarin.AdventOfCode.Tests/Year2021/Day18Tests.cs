@@ -30,60 +30,17 @@ public class Day18Tests
     }
 
     [Test]
-    public void SumTest()
+    [TestCaseSource(nameof(SumTestCases))]
+    public void SumTest((string[] numbers, string sum) testCase)
     {
-        Sum("[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]", "[6,6]").Should()
-            .Be("[[[[5,0],[7,4]],[5,5]],[6,6]]");
-    }
-    
-    [Test]
-    public void SumTest2()
-    {
-        Sum("[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]").Should()
-            .Be("[[[[3,0],[5,3]],[4,4]],[5,5]]");
-    }    
-
-    [Test]
-    public void SumTest3()
-    {
-        Sum("[[[[4,3],4],4],[7,[[8,4],9]]]", "[1,1]")
-            .Should().Be("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]");
-    }          
-    
-    [Test]
-    public void SumTest4()
-    {
-        Sum("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]",
-            "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]")
-            .Should().Be("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]");
-    }
-    
-    [Test]
-    public void SumTest5()
-    {
-        var numbers = new[]
-        {
-            "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]",
-            "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]"
-        };
-        
-        var queue = new Queue<INumber>(numbers.Select(x => NumberPair.Parse(new StringReader(x))));
-        var zeNumber = queue.Dequeue();
-
-        while (queue.Count > 0)
-        {
-            zeNumber = zeNumber.Add(queue.Dequeue());
-            zeNumber.Reduce();
-        }
-
-        zeNumber.ToString().Should().Be("[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]");
+        Sum(testCase.numbers).Should().Be(testCase.sum);
     }    
 
     [Test]
     [TestCase("[[9,1],[1,9]]", 129)]
-    public void MagnitudeTest()
+    public void MagnitudeTest(string number, int magnitude)
     {
-        
+        Number.Parse(number).GetMagnitude().Should().Be(magnitude);
     }
     
     private static string Reduce(string number)
@@ -102,26 +59,55 @@ public class Day18Tests
         return sut.ToString();
     }
     
-    private static int Magnitude(string number)
+    private static int GetMagnitude(string number)
     {
         var reader = new StringReader(number);
         var sut = NumberPair.Parse(reader);
-        return sut.Magnitude();
+        return sut.GetMagnitude();
     }
 
     private static string Sum(params string[] numbers)
     {
-        var queue = new Queue<INumber>(numbers.Select(x => NumberPair.Parse(new StringReader(x))));
+        var queue = new Queue<Number>(numbers.Select(Number.Parse));
         var zeNumber = queue.Dequeue();
 
         while (queue.Count > 0)
         {
-            zeNumber = zeNumber.Add(queue.Dequeue());
-            zeNumber.Reduce();
+            zeNumber += queue.Dequeue();
             
             Console.WriteLine(zeNumber.ToString());
         }
 
         return zeNumber.ToString();
     }
+    
+    public static (string[] numbers, string sum)[] SumTestCases =
+    {
+        (new[] { "[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]" }, "[[[[3,0],[5,3]],[4,4]],[5,5]]"),
+        (new[] { "[1,1]", "[2,2]", "[3,3]", "[4,4]", "[5,5]", "[6,6]" }, "[[[[5,0],[7,4]],[5,5]],[6,6]]"),
+        (
+            new[]
+            {
+                "[[[[4,3],4],4],[7,[[8,4],9]]]",
+                "[1,1]"
+            },
+            "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+        ),
+        (
+            new[]
+            {
+                "[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]",
+                "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"
+            },
+            "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"
+        ),
+        (
+            new[] 
+            {
+                "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]",
+                "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]"
+            },
+            "[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]"
+        ) 
+    };
 }

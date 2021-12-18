@@ -6,7 +6,7 @@ namespace Thorarin.AdventOfCode.Year2021;
 [Puzzle(Year = 2021, Day = 18, Part = 2)]
 public class Day18B : Puzzle
 {
-    private List<string> _numbers = new();
+    private List<Number> _numbers = new();
 
     public override Output SampleExpectedOutput => new Answer(
         Value: 3993,
@@ -21,36 +21,40 @@ public class Day18B : Puzzle
         _numbers = new();
         foreach (var line in reader.AsLines())
         {
-            _numbers.Add(line);
+            _numbers.Add(Number.Parse(line));
         }
     }
 
     public override Output Run()
     {
-        Answer max = new Answer(0, "", "", "");
-        
-        for (int a = 0; a < _numbers.Count; a++)
+        Answer max = Answer.Empty;
+
+        foreach (var a in _numbers)
         {
-            for (int b = 0; b < _numbers.Count; b++)
+            foreach (var b in _numbers)
             {
                 if (b == a) continue;
-
-                var numberA = NumberPair.Parse(new StringReader(_numbers[a]));
-                var numberB = NumberPair.Parse(new StringReader(_numbers[b]));
-                var sum = numberA.Add(numberB);
-                var reduced = sum.Reduce();
-                var magnitude = reduced.Magnitude();
+                var sum = a + b;
+                var magnitude = sum.GetMagnitude();
 
                 if (max.Value < magnitude)
                 {
-                    max = new Answer(magnitude, _numbers[a], _numbers[b], reduced.ToString()!);
+                    max = new Answer(magnitude, a, b, sum);
                 }
             }
         }
-        
+       
         return max;
     }
 
-    private record Answer(long Value, string Left, string Right, string Reduced) : Output(Value);
+    private record Answer(long Value, string Left, string Right, string Reduced) : Output(Value)
+    {
+        public Answer(long value, Number left, Number right, Number reduced) 
+            : this(value, left.ToString(), right.ToString(), reduced.ToString())
+        {
+        }
+
+        public static Answer Empty => new(0, "", "", "");
+    }
 
 }

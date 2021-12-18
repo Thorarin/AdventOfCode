@@ -2,12 +2,18 @@
 
 namespace Thorarin.AdventOfCode.Year2021.Day18;
 
-public class NumberPair : INumber
+internal class NumberPair : NumberNode
 {
-    private INumber _left;
-    private INumber _right;
+    private NumberNode _left;
+    private NumberNode _right;
 
-    public INumber Left
+    public NumberPair(NumberNode left, NumberNode right)
+    {
+        Left = left;
+        Right = right;
+    }
+    
+    public NumberNode Left
     {
         get => _left;
         set
@@ -17,7 +23,7 @@ public class NumberPair : INumber
         }
     }
 
-    public INumber Right
+    public NumberNode Right
     {
         get => _right;
         set
@@ -27,18 +33,12 @@ public class NumberPair : INumber
         }
     }
 
-    public NumberPair(INumber left, INumber right)
-    {
-        Left = left;
-        Right = right;
-    }
-        
     public static NumberPair Parse(StringReader reader)
     {
         var start = reader.Read();
         if (start != '[') throw new Exception();
 
-        INumber left;
+        NumberNode left;
             
         if (reader.Peek() == '[')
         {
@@ -48,10 +48,10 @@ public class NumberPair : INumber
         else
         {
             string str = reader.ReadUntil(',')!;
-            left = new SingleNumber(int.Parse(str));
+            left = new NumberSingle(int.Parse(str));
         }
             
-        INumber right;
+        NumberNode right;
         if (reader.Peek() == '[')
         {
             right = Parse(reader);
@@ -60,63 +60,38 @@ public class NumberPair : INumber
         else
         {
             string str = reader.ReadUntil(']')!;
-            right = new SingleNumber(int.Parse(str));
+            right = new NumberSingle(int.Parse(str));
         }
 
         return new NumberPair(left, right);
     }
-        
-    public int Magnitude()
+
+    protected internal override int GetMagnitude()
     {
-        return Left.Magnitude() * 3 + Right.Magnitude() * 2;
+        return Left.GetMagnitude() * 3 + Right.GetMagnitude() * 2;
     }
 
-    public INumber Add(INumber other)
+    protected internal void Reduce()
     {
-        var number = new NumberPair(this, other);
-        return number;
+        while (Explode() || Split()) { }
     }
 
-    public INumber Reduce()
-    {
-        //Console.WriteLine("Start:   " + ToString());
-        while (true)
-        {
-            if (Explode())
-            {
-                //Console.WriteLine("Explode: " + ToString());
-                continue;
-            }
-
-            if (Split())
-            {
-                //Console.WriteLine("Split:   " + ToString());
-                continue;
-            }
-                    
-            break;
-        }
-        return this;
-    }
-
-    public NumberPair? Parent { get; set; }
-
-    public bool Explode(int depth = 0)
+    internal bool Explode(int depth = 0)
     {
         if (depth == 4)
         {
             var numberLeft = FindLeftAdjacentRegularNumber();
             if (numberLeft != null)
             {
-                numberLeft.Number += ((SingleNumber)Left).Number;
+                numberLeft.Number += ((NumberSingle)Left).Number;
             }
             var numberRight = FindRightAdjacentRegularNumber();
             if (numberRight != null)
             {
-                numberRight.Number += ((SingleNumber)Right).Number;
+                numberRight.Number += ((NumberSingle)Right).Number;
             }
 
-            var replacement = new SingleNumber(0);
+            var replacement = new NumberSingle(0);
                 
             if (Parent.Left == this)
             {
@@ -131,25 +106,25 @@ public class NumberPair : INumber
         }
             
         bool exploded = false;
-        if (Left is NumberPair l)
+        if (Left is NumberPair left)
         {
-            exploded = l.Explode(depth + 1);
+            exploded = left.Explode(depth + 1);
         }
 
-        if (!exploded && Right is NumberPair r)
+        if (!exploded && Right is NumberPair right)
         {
-            exploded = r.Explode(depth + 1);
+            exploded = right.Explode(depth + 1);
         }
 
         return exploded;
     }
 
-    public bool Split()
+    protected internal override bool Split()
     {
         return Left.Split() || Right.Split();
     }
         
-    private SingleNumber? FindLeftAdjacentRegularNumber()
+    private NumberSingle? FindLeftAdjacentRegularNumber()
     {
         var current = Parent;
         var previous = this;
@@ -164,13 +139,13 @@ public class NumberPair : INumber
             
         return current.Left switch
         {
-            SingleNumber l => l,
+            NumberSingle l => l,
             NumberPair p => GetRightMostSingleNumber(p),
             _ => throw new ArgumentOutOfRangeException()
         };            
     }
         
-    private SingleNumber? FindRightAdjacentRegularNumber()
+    private NumberSingle? FindRightAdjacentRegularNumber()
     {
         var current = Parent;
         var previous = this;
@@ -182,56 +157,38 @@ public class NumberPair : INumber
         }
 
         if (current == null) return null;
-        //if (current.Left != previous && Left is SingleNumber r) return r;
 
         return current.Right switch
         {
-            SingleNumber l => l,
+            NumberSingle l => l,
             NumberPair p => GetLeftMostSingleNumber(p),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
 
-    private SingleNumber GetLeftMostSingleNumber(NumberPair number)
+    private NumberSingle GetLeftMostSingleNumber(NumberPair number)
     {
         if (number.Left is NumberPair p)
         {
             return GetLeftMostSingleNumber(p);
         }
-        return (SingleNumber)number.Left;
+        return (NumberSingle)number.Left;
     }
         
-    private SingleNumber GetRightMostSingleNumber(NumberPair number)
+    private NumberSingle GetRightMostSingleNumber(NumberPair number)
     {
         if (number.Right is NumberPair p)
         {
             return GetRightMostSingleNumber(p);
         }
-        return (SingleNumber)number.Right;
-    }        
-
-    bool Delete(INumber number)
-    {
-        var numberToKeep = Left == number ? Right : Left;
-            
-        if (Parent.Right == this)
-        {
-            Parent.Right = numberToKeep;
-            numberToKeep.Parent = Parent;
-            return true;
-        }
-
-        if (Parent.Left == this)
-        {
-            Parent.Left = numberToKeep;
-            numberToKeep.Parent = Parent;
-            return true;
-        }
-
-        throw new Exception("Error deleting");
+        return (NumberSingle)number.Right;
     }
-        
 
+    protected internal override NumberNode Clone()
+    {
+        return new NumberPair(Left.Clone(), Right.Clone());
+    }
+    
     public override string ToString()
     {
         return $"[{Left},{Right}]";

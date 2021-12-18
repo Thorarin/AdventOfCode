@@ -6,7 +6,7 @@ namespace Thorarin.AdventOfCode.Year2021;
 [Puzzle(Year = 2021, Day = 18, Part = 1)]
 public class Day18A : Puzzle
 {
-    private Queue<INumber> _numbers;
+    private Queue<Number> _numbers;
 
     public override Output SampleExpectedOutput => 4140;
 
@@ -17,9 +17,7 @@ public class Day18A : Puzzle
         _numbers = new();
         foreach (var line in reader.AsLines())
         {
-            var lineReader = new StringReader(line);
-
-            _numbers.Enqueue(NumberPair.Parse(lineReader));
+            _numbers.Enqueue(Number.Parse(line));
         }
     }
 
@@ -29,11 +27,10 @@ public class Day18A : Puzzle
 
         while (_numbers.Count > 0)
         {
-            zeNumber = zeNumber.Add(_numbers.Dequeue());
-            zeNumber.Reduce();
+            zeNumber += _numbers.Dequeue();
         }
 
-        return new Answer(zeNumber.Magnitude(), zeNumber.ToString());
+        return new Answer(zeNumber.GetMagnitude(), zeNumber.ToString());
     }
 
     private record Answer(long Value, string Number) : Output(Value);
