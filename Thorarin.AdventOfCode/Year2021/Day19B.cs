@@ -2,11 +2,11 @@
 
 namespace Thorarin.AdventOfCode.Year2021;
 
-[Puzzle(Year = 2021, Day = 19, Part = 1)]
-public class Day19A : Day19Base
+[Puzzle(Year = 2021, Day = 19, Part = 2)]
+public class Day19B : Day19Base
 {
-    public override Output SampleExpectedOutput => 79;
-    public override Output ProblemExpectedOutput => 359;
+    public override Output SampleExpectedOutput => 3621;
+    public override Output ProblemExpectedOutput => 12292;
 
     public override Output Run()
     {
@@ -23,6 +23,15 @@ public class Day19A : Day19Base
         Console.WriteLine(string.Join("\r\n", dumpPoints));
         #endif
 
-        return _beacons.Distinct().Count();
+        int maxDistance = 0;
+        foreach (var a in _scannerLoc)
+        {
+            foreach (var b in _scannerLoc)
+            {
+                maxDistance = Math.Max(maxDistance, a.Value.ManhattanDistance(b.Value));
+            }
+        }
+        
+        return maxDistance;
     }
 }
