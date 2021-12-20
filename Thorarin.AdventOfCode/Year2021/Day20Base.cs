@@ -8,43 +8,20 @@ public abstract class Day20Base : Puzzle
     private bool[] _algorithm;
     protected Image _image;
 
-    private Dictionary<Point, int> _map = new()
-    {
-        { new Point(-1, -1), 256 },
-        { new Point(0, -1), 128 },
-        { new Point(1, -1), 64 },
-        { new Point(-1, 0), 32 },
-        { new Point(0, 0), 16 },
-        { new Point(1, 0), 8 },
-        { new Point(-1, 1), 4 },
-        { new Point(0, 1), 2 },
-        { new Point(1, 1), 1 }
-    };
-
     public override void ParseInput(TextReader reader)
     {
-        _algorithm = new bool[512];
-        _image = new Image();
-        var algLine = reader.ReadLine();
-        for (int i = 0; i < 512; i++)
-        {
-            _algorithm[i] = algLine[i] == '#';
-        }
-
+        _algorithm = reader.ReadLine()!.Select(c => c == '#').ToArray();
+        
         reader.ReadLine();
 
-        int y = 0;
-        string? line;
-        while ((line = reader.ReadLine()) != null)
+        string[] imageData = reader.ToLineArray();
+        _image = new Image(imageData[0].Length, imageData.Length, _algorithm[0], _algorithm[^1]);
+        for (int y = 0; y < imageData.Length; y++)
         {
-            for (int x = 0; x < line.Length; x++)
+            for (int x = 0; x < imageData[y].Length; x++)
             {
-                if (line[x] == '#')
-                {
-                    _image[new Point(x, y)] = true;
-                }
-            }
-            y++;
+                _image[x, y] = imageData[y][x] == '#';
+            }            
         }
     }
 
@@ -58,7 +35,7 @@ public abstract class Day20Base : Puzzle
         {
             for (int x = image.MinX; x < image.MaxX; x++)
             {
-                Console.Write(image[new Point(x, y)] ? "#" : '.');
+                Console.Write(image[x, y] ? "#" : '.');
             }
 
             Console.WriteLine();
@@ -81,118 +58,133 @@ public abstract class Day20Base : Puzzle
     {
         var newImage = new Image(oldImage);
 
-        for (int x = oldImage.MinX - 2; x < oldImage.MaxX + 2; x++)
-        {
-            for (int y = oldImage.MinY - 2; y < oldImage.MaxY + 2; y++)
+        Parallel.ForEach(
+            Enumerable.Range(newImage.MinX, newImage.Width),
+            x =>
             {
-                CalcPixel(new Point(x, y), oldImage, newImage);
-            }
-        }
-
+                for (int y = newImage.MinY; y <= newImage.MaxY; y++)
+                {
+                    CalcPixel(x, y, oldImage, newImage);
+                }
+            });
+            
         return newImage;
     }
 
-    private void CalcPixel(Point point, Image oldImage, Image newImage)
+    private void CalcPixel(int x, int y, Image oldImage, Image newImage)
     {
-        newImage[point] = GetEnhancedPixel(point, oldImage);
+        newImage[x, y] = GetEnhancedPixel(x, y, oldImage);
     }
 
-    private bool GetEnhancedPixel(Point point, Image image)
+    private bool GetEnhancedPixel(int x, int y, Image image)
     {
         int value = 0;
-
-        foreach (var (offset, multiplier) in _map)
-        {
-            if (image[point + offset])
-            {
-                value += multiplier;
-            }
-        }
-
-        return _algorithm[value];
-    }
-
-    protected readonly struct Point
-    {
-        public Point(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
         
-        public int X { get; }
-        public int Y { get; }
-        
-
-        public static Point operator -(Point a, Point b)
-        {
-            return new Point(a.X - b.X, a.Y - b.Y);
-        }
-    
-        public static Point operator +(Point a, Point b)
-        {
-            return new Point(a.X + b.X, a.Y + b.Y);
-        }
-
-        public override string ToString()
-        {
-            return $"({X}, {Y})";
-        }        
+        // Optimized version without use of Point structs
+        if (image[x - 1, y - 1]) value |= 256;
+        if (image[x, y - 1])     value |= 128;
+        if (image[x + 1, y - 1]) value |= 64;
+        if (image[x - 1, y])     value |= 32;
+        if (image[x, y])         value |= 16;
+        if (image[x + 1, y])     value |= 8;
+        if (image[x - 1, y + 1]) value |= 4;
+        if (image[x, y + 1])     value |= 2;
+        if (image[x + 1, y + 1]) value |= 1;
+         
+         return _algorithm[value];
     }
 
     protected class Image
     {
-        public Image()
+        private const int Padding = 1;
+        private readonly bool[,] _image;
+
+        // Used for offsetting coordinates to support negative ones,
+        // since I can't be bothered with Array class for non-zero indexes.
+        private readonly int _offsetX;
+        private readonly int _offsetY;
+        
+        public Image(int width, int height, bool allOff, bool allOn)
         {
-            _image = new Dictionary<Point, bool>();
+            AllOff = allOff;
+            AllOn = allOn;
+            _image = new bool[width + Padding * 2, height + Padding * 2];
+            _offsetX = Padding;
+            _offsetY = Padding;
+
+            MinX = -Padding;
+            MaxX = width - 1 + Padding;
+            MinY = -Padding;
+            MaxY = height - 1 + Padding;
         }
 
-        public Image(Image old) : this()
+        public Image(Image oldImage)
         {
-            MinX = old.MinX;
-            MaxX = old.MaxX;
-            MinY = old.MinY;
-            MaxY = old.MaxY;
+            AllOff = oldImage.AllOff;
+            AllOn = oldImage.AllOn;
+            InfinityLit = oldImage.InfinityLit ? AllOn : AllOff;
 
-            Infinite = !old.Infinite;
+            int width = oldImage.Width + Padding * 2;
+            int height = oldImage.Height + Padding * 2;
+            
+            _image = new bool[width, height];
+            _offsetX = -oldImage.MinX + Padding;
+            _offsetY = -oldImage.MinY + Padding;
+            
+            MinX = -_offsetX;
+            MaxX = oldImage.MaxX + Padding;
+            MinY = -_offsetY;
+            MaxY = oldImage.MaxY + Padding;
         }
         
-        public bool Infinite { get; set; }
-        private Dictionary<Point, bool> _image;
+        public bool InfinityLit { get; }
+        public bool AllOff { get; }
+        public bool AllOn { get; }
 
-        public int MinX { get; private set; } = 0;
-        public int MaxX { get; private set;} = 0;
-        public int MinY { get; private set;} = 0;
-        public int MaxY { get; private set;} = 0;
+        public int MinX { get; }
+        public int MaxX { get; }
+        public int MinY { get; }
+        public int MaxY { get; }
 
-        public bool this[Point point]
+        public int Width => MaxX - MinX + 1;
+        public int Height => MaxY - MinY + 1;
+
+        public bool this[int x, int y]
         {
             get
             {
-                if (_image.TryGetValue(point, out bool pixel))
-                {
-                    return pixel;
-                }
-
-                return Infinite;
+                if (x < MinX || x > MaxX || y < MinY || y > MaxY) return InfinityLit;
+                return _image[x + _offsetX, y + _offsetY];
             }
             set
             {
-                if (value == Infinite) return;
-
-                //if (point.X < -1 || point.X > 111) return;
-                //if (point.Y < -10 || point.Y > 111) return;
-                _image[point] = value;
-
-                MinX = Math.Min(MinX, point.X);
-                MaxX = Math.Max(MaxX, point.X);
-                MinY = Math.Min(MinY, point.Y);
-                MaxY = Math.Max(MaxY, point.Y);
+                int x1 = x + _offsetX;
+                int y1 = y + _offsetY;
+                
+                #if DEBUG
+                if (x1 < 0 || x1 > _image.GetLength(0)) throw new Exception();
+                if (y1 < 0 || y1 > _image.GetLength(1)) throw new Exception();
+                #endif
+                
+                _image[x1, y1] = value;
             }
-            
         }
 
-        public int Count => _image.Count;
+        public int Count
+        {
+            get
+            {
+                int count = 0;
+                for (int x = 0; x < _image.GetLength(0); x++)
+                {
+                    for (int y = 0; y < _image.GetLength(1); y++)
+                    {
+                        if (_image[x, y]) count++;
+                    }
+                }
+
+                return count;
+            }
+        }
     }
-    
 }
