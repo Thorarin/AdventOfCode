@@ -57,26 +57,37 @@ public readonly struct Cuboid
     /// <summary>
     /// Split a cuboid in smaller ones, that together cover the same volume.
     /// </summary>    
-    private IEnumerable<Cuboid> Split(Cuboid other)
+    internal IEnumerable<Cuboid> Split(Cuboid other)
     {
-        return SplitX(other).SelectMany(c => c.SplitY(other)).SelectMany(c => c.SplitZ(other));
+        // Significantly less elegant than my original implementation,
+        // but results in quite a few less cuboids, which helps performance.
+        
+        foreach (var splitX in SplitX(other))
+        {
+            if (!splitX.Intersects(other))
+            {
+                yield return splitX;
+            }
+            else
+            {
+                foreach (var splitY in splitX.SplitY(other))
+                {
+                    if (!splitY.Intersects(other))
+                    {
+                        yield return splitY;
+                    }
+                    else
+                    {
+                        foreach (var splitZ in splitY.SplitZ(other))
+                        {
+                            yield return splitZ;
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    internal IEnumerable<Cuboid> SplitY(Cuboid other)
-    {
-        if (other.Y1 > Y1)
-        {
-            yield return new Cuboid(X1, X2, Y1, other.Y1 - 1, Z1, Z2);
-        }
-
-        yield return new Cuboid(X1, X2, Math.Max(Y1, other.Y1), Math.Min(Y2, other.Y2), Z1, Z2);
-
-        if (other.Y2 < Y2)
-        {
-            yield return new Cuboid(X1, X2, other.Y2 + 1, Y2, Z1, Z2);
-        }
-    }
-    
     internal IEnumerable<Cuboid> SplitX(Cuboid other)
     {
         if (other.X1 > X1)
@@ -92,6 +103,21 @@ public readonly struct Cuboid
         }
     }
     
+    internal IEnumerable<Cuboid> SplitY(Cuboid other)
+    {
+        if (other.Y1 > Y1)
+        {
+            yield return new Cuboid(X1, X2, Y1, other.Y1 - 1, Z1, Z2);
+        }
+
+        yield return new Cuboid(X1, X2, Math.Max(Y1, other.Y1), Math.Min(Y2, other.Y2), Z1, Z2);
+
+        if (other.Y2 < Y2)
+        {
+            yield return new Cuboid(X1, X2, other.Y2 + 1, Y2, Z1, Z2);
+        }
+    }    
+    
     internal IEnumerable<Cuboid> SplitZ(Cuboid other)
     {
         if (other.Z1 > Z1)
@@ -106,9 +132,9 @@ public readonly struct Cuboid
             yield return new Cuboid(X1, X2, Y1, Y2, other.Z2 + 1, Z2);
         }
     }
-
+    
     public override string ToString()
     {
-        return $"{X1}-{X2}, {Y1}-{Y2}, {Z1}-{Z2}";
+        return $"({X1}-{X2}, {Y1}-{Y2}, {Z1}-{Z2})";
     }
 }
