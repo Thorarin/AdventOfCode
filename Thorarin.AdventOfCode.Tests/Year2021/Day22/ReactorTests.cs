@@ -52,13 +52,24 @@ public class ReactorTests
         // (that is, some cuboids were still intersecting with the removed cuboid)
         var reactor = new Reactor();
         reactor.TurnOn(new Cuboid(-5, 47, -31, 22, -19, 33));
+        reactor.CubesOn.Should().Be(151_686L);
+        
         reactor.TurnOn(new Cuboid(-44, 5, -27, 21, -14, 35));
+        reactor.CubesOn.Should().Be(248_314L);
+        
         reactor.TurnOn(new Cuboid(-49, -1, -11, 42, -10, 38));
+        reactor.CubesOn.Should().Be(310_956L);
+        
         reactor.TurnOn(new Cuboid(-20, 34, 40, 6, -44, 1));
+        reactor.CubesOn.Should().Be(376_886L);
+        
         reactor.TurnOff(new Cuboid(26, 39, 40, 50, 2, 11));
+        reactor.CubesOn.Should().Be(376_886L);
+        
         reactor.TurnOn(new Cuboid(-41, 5, -41, 6, -36, 8));
+        reactor.CubesOn.Should().Be(438_033L);
+        
         reactor.TurnOff(new Cuboid(-43, -33, -45, -28, 7, 25));
-
         reactor.CubesOn.Should().Be(437_781L);
     }
 }

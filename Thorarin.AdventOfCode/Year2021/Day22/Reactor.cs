@@ -13,31 +13,50 @@ internal class Reactor
 
     public void TurnOn(Cuboid cuboid)
     {
-        if (Cuboids.Any(cuboid.IsFullyInside)) return;
-
+        var intersects = Cuboids.Where(cuboid.Intersects).ToList();
+        
+        if (intersects.Any(cuboid.IsFullyInside)) return;
+        
         // Remove existing cuboids fully inside this new cuboid,
         // because they will be redundant after adding this one.
-        for (var i = Cuboids.Count - 1; i >= 0; i--)
+        foreach (var redundant in intersects.Where(x => x.IsFullyInside(cuboid)).ToList())
         {
-            if (Cuboids[i].IsFullyInside(cuboid))
-            {
-                Cuboids.RemoveAt(i);
-            }
+            Cuboids.Remove(redundant);
+            intersects.Remove(redundant);
         }
-
-        foreach (var existing in Cuboids)
+        
+        if (intersects.Count > 0)
         {
-            if (existing.Intersects(cuboid))
-            {
-                foreach (var splitCube in cuboid.Remove(existing))
-                {
-                    TurnOn(splitCube);
-                }
-                return;
-            }
+            AddDisjoint(cuboid, intersects);
+            return;
         }
         
         Cuboids.Add(cuboid);        
+    }
+
+    private void AddDisjoint(Cuboid cuboid, List<Cuboid> oldIntersects)
+    {
+        var pick = oldIntersects[^1];
+        oldIntersects.RemoveAt(oldIntersects.Count - 1);
+        AddDisjoint(cuboid.Remove(pick), oldIntersects);
+    }
+    
+    private void AddDisjoint(IEnumerable<Cuboid> cuboids, List<Cuboid> intersects)
+    {
+        foreach (var cuboid in cuboids)
+        {
+            var newIntersects = intersects.Where(cuboid.Intersects).ToList();
+            if (newIntersects.Any(x => cuboid.IsFullyInside(x))) continue;
+
+            if (newIntersects.Count == 0)
+            {
+                Cuboids.Add(cuboid);
+            }
+            else
+            {
+                AddDisjoint(cuboid, newIntersects);
+            }
+        }
     }
 
     public void TurnOff(Cuboid cuboid)
