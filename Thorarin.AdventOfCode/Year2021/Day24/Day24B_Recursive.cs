@@ -3,7 +3,7 @@
 namespace Thorarin.AdventOfCode.Year2021.Day24;
 
 [Puzzle(Year = 2021, Day = 24, Part = 2)]
-public class Day24B : Day24Base
+public class Day24B_Recursive : Day24Base
 {
     // The sample file is actually a second problem input from another participant
     public override Output SampleExpectedOutput => 48_111_514_719_111;

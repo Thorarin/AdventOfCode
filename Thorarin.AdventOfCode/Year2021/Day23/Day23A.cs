@@ -31,21 +31,13 @@ public class Day23A : Puzzle
     public override Output Run()
     {
         int min = int.MaxValue;
-        List<string> moveList = new();
         
-        DoMoves(_state, ref min, ref moveList);
+        DoMoves(_state, ref min);
 
-        #if DEBUG
-        foreach (var line in moveList)
-        {
-            Console.WriteLine(line);
-        }
-        #endif
-        
         return min;
     }
 
-    private void DoMoves(State state, ref int minimumEnergy, ref List<string> moveList)
+    private void DoMoves(State state, ref int minimumEnergy)
     {
         var nextStates = state.Moves().ToList();
 
@@ -56,14 +48,11 @@ public class Day23A : Puzzle
                 if (next.Energy < minimumEnergy)
                 {
                     minimumEnergy = next.Energy;
-                    #if DEBUG
-                    moveList = move.MoveList;
-                    #endif
                 }
             }
             else if (next.Energy < minimumEnergy)
             {
-                DoMoves(next, ref minimumEnergy, ref moveList);
+                DoMoves(next, ref minimumEnergy);
             }
         }
     }
