@@ -11,6 +11,6 @@ public class MathExTests
     [TestCase(10, 5, 100000)]
     public void IntPowTest(int x, int pow, int expected)
     {
-        MathEx.IntPow(x, pow).Should().Be(expected);
+        MathEx.Pow(x, pow).Should().Be(expected);
     }
 }
