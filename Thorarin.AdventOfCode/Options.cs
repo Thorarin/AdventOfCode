@@ -15,4 +15,7 @@ public class Options
     
     [Option('i', "iterations", Default = 1, HelpText = "The number of times to run the puzzle (for more accurate measurements)")]
     public int Iterations { get; set; }
+
+    [Option("warmup", HelpText = "Make sure code is pre-JITted by running with sample data once")]
+    public bool Warmup { get; set; }
 }

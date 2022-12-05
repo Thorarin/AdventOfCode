@@ -160,5 +160,5 @@ public class Day13B_OCR : Puzzle
   
     record Dot(int X, int Y);
 
-    record Answer(string RecognizedCode, long Value) : Output(Value);
+    record Answer(string RecognizedCode, long Value) : LongOutput(Value);
 }

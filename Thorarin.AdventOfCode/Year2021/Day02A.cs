@@ -45,5 +45,5 @@ public class Day02A : Puzzle
         return new Result(position.depth, position.x);
     }
 
-    private record Result(int Depth, int X) : Output(Depth * X);
+    private record Result(int Depth, int X) : LongOutput(Depth * X);
 }

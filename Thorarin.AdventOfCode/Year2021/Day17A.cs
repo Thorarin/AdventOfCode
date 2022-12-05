@@ -102,5 +102,5 @@ public class Day17A : Puzzle
         }
     }
 
-    private record Answer(long Value, int DeltaY) : Output(Value);
+    private record Answer(long Value, int DeltaY) : LongOutput(Value);
 }

@@ -45,5 +45,5 @@ public class Day03A : Puzzle
         return new Answer(Convert.ToInt64(gamma, 2), Convert.ToInt64(epsilon, 2));
     }
 
-    private record Answer(long Gamma, long Epsilon) : Output(Gamma * Epsilon);
+    private record Answer(long Gamma, long Epsilon) : LongOutput(Gamma * Epsilon);
 }

@@ -92,5 +92,5 @@ public class Day13B : Puzzle
 
     record Dot(int X, int Y);
 
-    record Answer(long Value, string Image) : Output(Value);
+    record Answer(long Value, string Image) : LongOutput(Value);
 }

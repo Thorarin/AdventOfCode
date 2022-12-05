@@ -13,7 +13,8 @@ public class Day20A : Day20Base
     public override Output Run()
     {
         var image = EnhanceTimes(_image, 2);
-        Dump(image, _image.Count < 100 ? SampleExpectedOutput.Value : ProblemExpectedOutput.Value);
+        // TODO
+        //Dump(image, _image.Count < 100 ? SampleExpectedOutput.Value : ProblemExpectedOutput.Value);
         
         return image.Count;
     }

@@ -33,5 +33,5 @@ public class Day18A : Puzzle
         return new Answer(zeNumber.GetMagnitude(), zeNumber.ToString());
     }
 
-    private record Answer(long Value, string Number) : Output(Value);
+    private record Answer(long Value, string Number) : LongOutput(Value);
 }

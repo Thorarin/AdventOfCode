@@ -35,5 +35,5 @@ public class Day03B : Puzzle
         return Filter(filtered, position + 1, invert);
     }    
 
-    private record Answer(long Oxygen, long CarbonDioxide) : Output(Oxygen * CarbonDioxide);
+    private record Answer(long Oxygen, long CarbonDioxide) : LongOutput(Oxygen * CarbonDioxide);
 }

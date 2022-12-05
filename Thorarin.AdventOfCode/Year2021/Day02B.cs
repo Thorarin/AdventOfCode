@@ -47,5 +47,5 @@ public class Day02B : Puzzle
     }
 
     [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Local")]
-    private record Result(int Depth, int X) : Output(Depth * X);
+    private record Result(int Depth, int X) : LongOutput(Depth * X);
 }

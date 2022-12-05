@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.Reflection;
+using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Thorarin.AdventOfCode.Framework;
 
@@ -8,6 +9,21 @@ internal class Program
 {
     internal static Task Main(string[] args)
     {
+        foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+        {
+            foreach (var method in type.GetMethods(BindingFlags.DeclaredOnly |
+                                                   BindingFlags.NonPublic |
+                                                   BindingFlags.Public | BindingFlags.Instance |
+                                                   BindingFlags.Static))
+            {
+                if ((method.Attributes & MethodAttributes.Abstract) == MethodAttributes.Abstract || method.ContainsGenericParameters)
+                {
+                    continue;
+                }
+                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
+            }
+        }
+
         return Parser.Default.ParseArguments<Options>(args).WithParsedAsync(RunWithOptions);
     }
 
@@ -46,7 +62,7 @@ internal class Program
         
         foreach (var puzzleType in puzzleTypes)
         {
-            await runner.RunImplementation(puzzleType, options.Iterations);
+            await runner.RunImplementation(puzzleType, options.Iterations, options.Warmup);
             Console.WriteLine();
         }
     }

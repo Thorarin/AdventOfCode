@@ -47,7 +47,7 @@ public class Day18B : Puzzle
         return max;
     }
 
-    private record Answer(long Value, string Left, string Right, string Reduced) : Output(Value)
+    private record Answer(long Value, string Left, string Right, string Reduced) : LongOutput(Value)
     {
         public Answer(long value, Number left, Number right, Number reduced) 
             : this(value, left.ToString(), right.ToString(), reduced.ToString())

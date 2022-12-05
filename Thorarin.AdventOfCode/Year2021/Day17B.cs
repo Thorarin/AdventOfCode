@@ -114,5 +114,5 @@ public class Day17B : Puzzle
         return false;
     }
 
-    private record Answer(long Value, int MaxY, int DeltaY) : Output(Value);
+    private record Answer(long Value, int MaxY, int DeltaY) : LongOutput(Value);
 }

@@ -34,5 +34,5 @@ public class Day17A_SpecialCase : Puzzle
         return new Answer(maxY, deltaY);        
     }
 
-    private record Answer(long Value, int DeltaY) : Output(Value);
+    private record Answer(long Value, int DeltaY) : LongOutput(Value);
 }

@@ -13,12 +13,12 @@ public class Runner
         _serviceProvider = serviceProvider;
     }
     
-    public Task RunImplementation(Type type, int iterations)
+    public Task RunImplementation(Type type, int iterations, bool warmup)
     {
         try
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-            return ConsoleRunner(type, iterations);
+            return ConsoleRunner(type, iterations, warmup);
         }
         finally
         {
@@ -26,7 +26,7 @@ public class Runner
         }
     }
 
-    private async Task ConsoleRunner(Type type, int iterations)
+    private async Task ConsoleRunner(Type type, int iterations, bool warmup)
     {
         var attr = type.GetCustomAttribute<PuzzleAttribute>()!;
         Console.WriteLine($"Running {attr.Year}-{attr.Day}-{attr.Part}, implementation: {type.Name}");
@@ -34,7 +34,14 @@ public class Runner
         string path = $"Year{attr.Year}\\Inputs";
         string sampleFileName = Path.Combine(path, $"day{attr.Day:00}-sample.txt");
         string problemFileName = Path.Combine(path, $"day{attr.Day:00}-problem.txt");
-        
+
+        if (warmup)
+        {
+            Console.Write("Doing warmup run... ");
+            await Run(type, sampleFileName, RunType.Sample);
+            Console.WriteLine("DONE");
+        }
+
         Console.Write("Running using sample data...  ");
 
         bool compareSampleOutput = true;
@@ -48,7 +55,7 @@ public class Runner
             Console.WriteLine("WARNING: sample input not found. Using problem data.");
             Console.ResetColor();
         }
-        
+
         var sampleRunResult = await Run(type, sampleFileName, RunType.Sample);
         Console.WriteLine($"OK ({sampleRunResult.TotalDuration.FormatHumanReadable()})");
 
@@ -95,7 +102,14 @@ public class Runner
         foreach (var extras in DiscoverExtraInputs(type))
         {
             Console.Write($"Running using extra data ({extras.FileName})... ");
-            string filePath = Path.Combine(path, extras.FileName); 
+            string filePath = Path.Combine(path, extras.FileName);
+
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("SKIPPED (File Not Found)");
+                continue;
+            }
+
             var runResult = await Run(type, filePath, extras.Expected);
             Console.WriteLine($"OK ({runResult.TotalDuration.FormatHumanReadable()})");
             WarnOnOutputIncorrect(runResult.Expected, runResult.Output);
@@ -135,6 +149,8 @@ public class Runner
   
     private Task<RunResult> Run(Type type, string fileName, RunType runType)
     {
+        GC.Collect(2);
+
         if (typeof(Puzzle).IsAssignableFrom(type))
         {
             var puzzleInstance = (Puzzle)ActivatorUtilities.CreateInstance(_serviceProvider, type);
@@ -223,8 +239,9 @@ public class Runner
         {
             return expected == actual;
         }
-
-        return expected.Value == actual.Value;
+        // TODO
+        return false;
+        //return expected.Value == actual.Value;
     }
 
     private record RunResult(Output Output, TimeSpan ParseDuration, TimeSpan RunDuration, Output? Expected)
