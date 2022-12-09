@@ -73,9 +73,9 @@ public class Day09A : Puzzle
 
     private static int Step(int from, int to)
     {
-        return to == from ? 0 : to > from ? 1 : -1;
+        return Math.Sign(to - from);
     }
-    
+
 
     public record struct Point(int X, int Y)
     {

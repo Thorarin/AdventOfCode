@@ -23,9 +23,8 @@ public class Day09B : Puzzle
 
     public override Output Run()
     {
+        var knots = new Point[10];
         HashSet<Point> positions = new();
-
-        Point[] knots = new Point[10];
 
         positions.Add(knots[9]);
 
@@ -61,30 +60,41 @@ public class Day09B : Puzzle
 
         void MoveKnot(int deltaX, int deltaY, int knot)
         {
-            knots[knot] = new Point(knots[knot].X + deltaX, knots[knot].Y + deltaY);
+            var current = knots[knot] = knots[knot].Move(deltaX, deltaY);
 
             if (knot == knots.Length - 1)
             {
-                positions.Add(knots[knot]);
+                positions.Add(current);
                 return;
             }
 
-            if (Math.Abs(knots[knot].X - knots[knot + 1].X) > 1 || Math.Abs(knots[knot].Y - knots[knot + 1].Y) > 1)
+            var next = knots[knot + 1];
+
+            if (Math.Abs(current.X - next.X) > 1 || Math.Abs(current.Y - next.Y) > 1)
             {
-                MoveKnot(Step(knots[knot + 1].X, knots[knot].X), Step(knots[knot + 1].Y, knots[knot].Y), knot + 1);
+                MoveKnot(
+                    Step(next.X, current.X),
+                    Step(next.Y, current.Y),
+                    knot + 1);
             }
         }
 
         return positions.Count;
     }
 
+   
+
     private static int Step(int from, int to)
     {
-        return to == from ? 0 : to > from ? 1 : -1;
+        return Math.Sign(to - from);
     }
     
 
     public record struct Point(int X, int Y)
     {
+        public Point Move(int deltaX, int deltaY)
+        {
+            return new Point(X + deltaX, Y + deltaY);
+        }
     }
 }
