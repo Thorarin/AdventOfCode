@@ -1,4 +1,5 @@
 ﻿using MoreLinq;
+using System.Runtime.CompilerServices;
 using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2022;
@@ -46,7 +47,6 @@ public class Day09A : Puzzle
                     MoveMultiple(0, 1, times);
                     break;
             }
-
         }
 
         void MoveMultiple(int deltaX, int deltaY, int times)
@@ -57,13 +57,14 @@ public class Day09A : Puzzle
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         void Move(int deltaX, int deltaY)
         {
-            head = new Point(head.X + deltaX, head.Y + deltaY);
+            head = head.Move(deltaX, deltaY);
 
             if (Math.Abs(head.X - tail.X) > 1 || Math.Abs(head.Y - tail.Y) > 1)
             {
-                tail = new Point(tail.X + Step(tail.X, head.X), tail.Y + Step(tail.Y, head.Y));
+                tail = tail.Move(Step(tail.X, head.X), Step(tail.Y, head.Y));
                 positions.Add(tail);
             }
         }
@@ -76,8 +77,11 @@ public class Day09A : Puzzle
         return Math.Sign(to - from);
     }
 
-
-    public record struct Point(int X, int Y)
+    public readonly record struct Point(int X, int Y)
     {
+        public Point Move(int deltaX, int deltaY)
+        {
+            return new Point(X + deltaX, Y + deltaY);
+        }
     }
 }

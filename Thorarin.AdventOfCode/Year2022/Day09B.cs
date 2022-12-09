@@ -1,4 +1,4 @@
-﻿using MoreLinq;
+﻿using System.Runtime.CompilerServices;
 using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2022;
@@ -20,17 +20,16 @@ public class Day09B : Puzzle
 
     public override Output ProblemExpectedOutput => 2593;
 
-
     public override Output Run()
     {
         var knots = new Point[10];
         HashSet<Point> positions = new();
 
-        positions.Add(knots[9]);
+        positions.Add(knots[^1]);
 
         foreach (var line in _lines)
         {
-            int times = int.Parse(line.Substring(2));
+            int times = int.Parse(line.AsSpan().Slice(2));
 
             switch (line[0])
             {
@@ -58,6 +57,7 @@ public class Day09B : Puzzle
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         void MoveKnot(int deltaX, int deltaY, int knot)
         {
             var current = knots[knot] = knots[knot].Move(deltaX, deltaY);
@@ -82,15 +82,12 @@ public class Day09B : Puzzle
         return positions.Count;
     }
 
-   
-
     private static int Step(int from, int to)
     {
         return Math.Sign(to - from);
     }
-    
 
-    public record struct Point(int X, int Y)
+    public readonly record struct Point(int X, int Y)
     {
         public Point Move(int deltaX, int deltaY)
         {
