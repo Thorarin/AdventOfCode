@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
+using System.Runtime.InteropServices;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Thorarin.AdventOfCode.Framework;
+using Thorarin.AdventOfCode.Ocr;
 
 namespace Thorarin.AdventOfCode;
 
@@ -72,6 +74,11 @@ internal class Program
         var services = new ServiceCollection();
         var store = SecretStore.Load("secrets.json");
         services.AddSingleton(store);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            services.AddTransient<IOcrService, OcrSpaceOcrService>();
+        }
 
         return services.BuildServiceProvider();
     }

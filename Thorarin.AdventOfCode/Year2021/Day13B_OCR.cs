@@ -14,16 +14,16 @@ namespace Thorarin.AdventOfCode.Year2021;
 [Puzzle(Year = 2021, Day = 13, Part = 2)]
 public class Day13B_OCR : Puzzle
 {
-    private readonly string _apiKey;
+    private readonly OcrSpaceOcrService _ocrSpaceOcrService;
     private List<Dot> _dots;
     private Func<Dot, Dot> _fold;
 
     public override Output SampleExpectedOutput => new Answer("(OCR failed)", 16);
     public override Output ProblemExpectedOutput => new Answer("CJHAZHKU", 97);
 
-    public Day13B_OCR(SecretStore secrets)
+    public Day13B_OCR(OcrSpaceOcrService ocrSpaceOcrService)
     {
-        _apiKey = secrets.GetSecret("OcrApiKey");
+        _ocrSpaceOcrService = ocrSpaceOcrService;
     }
     
     public override Output Run()
@@ -87,77 +87,12 @@ public class Day13B_OCR : Puzzle
         {
             grid[dot.X, dot.Y] = true;
         }
-        int mag = 2;
-        Bitmap bitmap = new Bitmap(width * mag + 20, height * mag + 20);
-        Graphics graphics = Graphics.FromImage(bitmap);
-        graphics.FillRectangle(Brushes.White, 0, 0, (width * mag) + 20, (height * mag) + 20);
 
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                if (grid[x, y])
-                {
-                    graphics.FillRectangle(Brushes.Black, x * mag + 10, y * mag + 10, mag, mag);
-                    
-                    if (y < height - 1 && x < width - 1)
-                    {
-                        if (grid[x + 1, y + 1] && !grid[x + 1, y] && !grid[x, y +1])
-                        {
-                            bitmap.SetPixel(x * mag + 12, y * mag + 11, Color.Black);
-                            bitmap.SetPixel(x * mag + 11, y * mag + 12, Color.Black);
-                        }
-                    }
-                    
-                    if (y > 0 && x < width - 1)
-                    {
-                        if (grid[x + 1, y - 1] && !grid[x + 1, y] && !grid[x, y - 1])
-                        {
-                            bitmap.SetPixel(x * mag + 12, y * mag + 10, Color.Black);
-                            bitmap.SetPixel(x * mag + 11, y * mag + 9, Color.Black);
-                        }
-                    }                    
-                    
-                }
-
-            }
-        }
-
-        string code;
-        
-        using (var memoryStream = new MemoryStream())
-        {
-            bitmap.Save(memoryStream, ImageFormat.Png);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            code = await OcrPngImage(memoryStream.GetBuffer());
-        }
+        string code = await _ocrSpaceOcrService.OcrBitmap(grid);
 
         return new Answer(code, foldedDots.Count);
     }
 
-    private async Task<string> OcrPngImage(byte[] image)
-    {
-        var formContent = new FormUrlEncodedContent(new[]
-        {
-            new KeyValuePair<string, string>("apikey", _apiKey), 
-            new KeyValuePair<string, string>("base64Image", "data:image/png;base64," + Convert.ToBase64String(image)),
-            new KeyValuePair<string, string>("filetype", "PNG"),
-            new KeyValuePair<string, string>("OCREngine", "2")
-        });
-            
-        var client = new HttpClient();
-
-        var response = await client.PostAsync("https://api.ocr.space/parse/image", formContent);
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadFromJsonAsync<OcrResult>();
-        if (content.ParsedResults.Count > 0)
-        {
-            return content.ParsedResults[0].ParsedText;
-        }
-
-        return "(OCR failed)";
-    }
-  
     record Dot(int X, int Y);
 
     record Answer(string RecognizedCode, long Value) : LongOutput(Value);
