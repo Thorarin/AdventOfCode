@@ -1,5 +1,5 @@
-﻿using Jace;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Linq.Expressions;
 using Thorarin.AdventOfCode.Framework;
 using Thorarin.AdventOfCode.Extensions;
 
@@ -11,11 +11,9 @@ namespace Thorarin.AdventOfCode.Year2022
 
         public override void ParseInput(TextReader reader)
         {
-            var engine = new CalculationEngine();
-
             while (reader.Peek() >= 0)
             {
-                var monkeyLine = reader.ReadLine();
+                reader.ReadLine();
                 var startingItems = reader.ReadLine().Substring(18).Split(',')
                     .Select(x => int.Parse(x, NumberStyles.AllowLeadingWhite)).ToList();
                 var operation = reader.ReadLine().Substring(19);
@@ -25,15 +23,10 @@ namespace Thorarin.AdventOfCode.Year2022
 
                 if (reader.Peek() >= 0) reader.ReadLine();
 
-                var operationFunc = (Func<double, double>)engine.Formula(operation)
-                    .Parameter("old", DataType.FloatingPoint)
-                    .Result(DataType.FloatingPoint)
-                    .Build();
-
                 Monkeys.Add(new Monkey
                 {
                     Number = Monkeys.Count,
-                    Operation = old => (long)operationFunc(old),
+                    Operation = GetOperation(operation),
                     Test = test,
                     TrueMonkey = trueMonkey,
                     FalseMonkey = falseMonkey
@@ -42,6 +35,38 @@ namespace Thorarin.AdventOfCode.Year2022
                 Monkeys[^1].Items.Enqueue(startingItems);
             }
         }
+
+        private Func<int, long> GetOperation(string operation)
+        {
+            string[] split = operation.Split(' ');
+
+            var input = Expression.Parameter(typeof(int), "old");
+            var old = Expression.Convert(input, typeof(long));
+
+            Expression left = split[0] switch
+            {
+                "old" => old,
+                _ => Expression.Constant(long.Parse(split[0]))
+            };
+
+            Expression right = split[2] switch
+            {
+                "old" => old,
+                _ => Expression.Constant(long.Parse(split[2]))
+            };
+
+            Expression binaryOperation = split[1] switch
+            {
+                "*" => Expression.Multiply(left, right),
+                "+" => Expression.Add(left, right),
+                _ => throw new NotImplementedException()
+            };
+
+            var lamdba = Expression.Lambda(binaryOperation, input);
+
+            return (Func<int, long>)lamdba.Compile();
+        }
+
         protected long CalculateMonkeyBusinessLevel()
         {
             return Monkeys
@@ -75,11 +100,11 @@ namespace Thorarin.AdventOfCode.Year2022
         {
             public int Number { get; init; }
             public Queue<int> Items { get; } = new();
-            public Func<int, long> Operation { get; init; }
+            public required Func<int, long> Operation { get; init; }
 
-            public int Test { get; init; }
-            public int TrueMonkey { get; init; }
-            public int FalseMonkey { get; init; }
+            public required int Test { get; init; }
+            public required int TrueMonkey { get; init; }
+            public required int FalseMonkey { get; init; }
 
             public long Inspections { get; private set; }
 

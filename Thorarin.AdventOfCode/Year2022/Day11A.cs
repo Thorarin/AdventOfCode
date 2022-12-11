@@ -11,7 +11,7 @@ public class Day11A : Day11Base
 
     public override Output Run()
     {
-        DoMonkeyBusinessRounds(20, worry => (int)worry / 3);
+        DoMonkeyBusinessRounds(20, worry => (int)(worry / 3));
 
         return CalculateMonkeyBusinessLevel();
     }

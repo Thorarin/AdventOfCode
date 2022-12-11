@@ -11,7 +11,7 @@ public class Day11B : Day11Base
 
     public override Output Run()
     {
-        var divisor = Monkeys.Select(m => m.Test).Aggregate((a, b) => a * b);
+        var divisor = Monkeys.Select(m => m.Test).Distinct().Aggregate((a, b) => a * b);
 
         DoMonkeyBusinessRounds(10_000, worry => (int)(worry % divisor));
 
