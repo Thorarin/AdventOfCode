@@ -9,7 +9,7 @@ namespace Thorarin.AdventOfCode.Framework
 
         public sealed override string ToString()
         {
-            if (GetType() == typeof(Output))
+            if (GetType() == typeof(LongOutput))
             {
                 return StringValue;
             }
@@ -20,7 +20,7 @@ namespace Thorarin.AdventOfCode.Framework
 
             var extraProperties = GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(prop => prop.DeclaringType != typeof(Output))
+                .Where(prop => prop.DeclaringType != typeof(LongOutput))
                 .ToList();
 
             if (extraProperties.Count > 0)
