@@ -55,4 +55,45 @@ public static class TextReaderExtensions
         }
         return null;        
     }
+
+    public static string? ReadUntil(this TextReader reader, char[] until)
+    {
+        StringBuilder sb = new StringBuilder();
+        while (true)
+        {
+            int ch = reader.Read();
+            if (ch == -1) break;
+            if (until.Contains((char)ch))
+            {
+                return sb.ToString();
+            }
+            sb.Append((char)ch);
+        }
+        if (sb.Length > 0)
+        {
+            return sb.ToString();
+        }
+        return null;
+    }
+
+    public static string? ReadUntilExcluding(this TextReader reader, char[] until)
+    {
+        StringBuilder sb = new StringBuilder();
+        while (true)
+        {
+            int ch = reader.Peek();
+            if (ch == -1) break;
+            if (until.Contains((char)ch))
+            {
+                return sb.ToString();
+            }
+            reader.Read();
+            sb.Append((char)ch);
+        }
+        if (sb.Length > 0)
+        {
+            return sb.ToString();
+        }
+        return null;
+    }
 }
