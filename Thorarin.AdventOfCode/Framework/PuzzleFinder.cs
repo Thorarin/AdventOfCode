@@ -46,4 +46,88 @@ public class PuzzleFinder
             .SelectMany(grouping => grouping)
             .Where(x => x.Name == implementationName);
     }
+
+    public PuzzleFinderQueryBuilder Query()
+    {
+        return new PuzzleFinderQueryBuilder(Puzzles);
+    }
+
+    public class PuzzleFinderQueryBuilder
+    {
+        private int? _year;
+        private int? _day;
+        private string? _name;
+        private ILookup<PuzzleIdentifier, Type> Puzzles { get; }
+
+        protected internal PuzzleFinderQueryBuilder(ILookup<PuzzleIdentifier, Type> puzzles)
+        {
+            Puzzles = puzzles;
+        }
+
+        public PuzzleFinderQueryBuilder ForYear(int year)
+        {
+            _year = year;
+
+            return this;
+        }
+
+        public PuzzleFinderQueryBuilder ForDay(int day)
+        {
+            _day = day;
+
+            return this;
+        }
+
+        public PuzzleFinderQueryBuilder ForDay(int year, int day)
+        {
+            _year = year;
+            _day = day;
+
+            return this;
+        }
+
+        public PuzzleFinderQueryBuilder WithName(string name)
+        {
+            _name = name;
+
+            return this;
+        }
+
+        public IEnumerable<Type> Find()
+        {
+            IEnumerable<IGrouping<PuzzleIdentifier, Type>> query;
+
+            if (_year.HasValue && _day.HasValue)
+            {
+                query = Puzzles
+                    .Where(grouping => grouping.Key.Year == _year && grouping.Key.Day == _day);
+            }
+            else if (_year.HasValue)
+            {
+                query = Puzzles
+                    .Where(grouping => grouping.Key.Year == _year);
+            }
+            else if (_day.HasValue)
+            {
+                query = Puzzles
+                    .Where(grouping => grouping.Key.Day == _day);
+            }
+            else
+            {
+                query = Puzzles;
+            }
+
+            var query2 = query
+                .OrderBy(grouping => grouping.Key)
+                .SelectMany(grouping => grouping);
+
+            if (_name != null)
+            {
+                query2 = query2
+                    .Where(x => x.Name == _name);
+            }
+
+            return query2;
+        }
+    }
 }

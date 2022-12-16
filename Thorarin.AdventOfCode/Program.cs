@@ -36,27 +36,39 @@ internal class Program
         var puzzleFinder = new PuzzleFinder();
         List<Type> puzzleTypes;
 
-        if (!string.IsNullOrEmpty(options.Implementation))
-        {
-            puzzleTypes = puzzleFinder.GetByImplementationName(options.Implementation).ToList();
-        }
-        else if (options.Year.HasValue)
-        {
-            if (options.Day.HasValue)
-            {
-                puzzleTypes = puzzleFinder.GetPuzzlesForDay(options.Year.Value, options.Day.Value).ToList();
-            }
-            else
-            {
-                puzzleTypes = puzzleFinder.GetPuzzlesForYear(options.Year.Value).ToList();    
-            }
-        }
-        else
+        var query = puzzleFinder.Query();
+
+        if (!options.Year.HasValue && !options.Day.HasValue && string.IsNullOrEmpty(options.Implementation))
         {
             var date = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-5));
             puzzleTypes = puzzleFinder.GetPuzzlesForDate(date).ToList();
         }
-        
+        else
+        {
+            if (options.Year.HasValue)
+            {
+                if (options.Day.HasValue)
+                {
+                    query.ForDay(options.Year.Value, options.Day.Value);
+                }
+                else
+                {
+                    query.ForYear(options.Year.Value);
+                }
+            }
+            else if (options.Day.HasValue)
+            {
+                query.ForDay(options.Day.Value);
+            }
+
+            if (!string.IsNullOrEmpty(options.Implementation))
+            {
+                query.WithName(options.Implementation);
+            }
+
+            puzzleTypes = query.Find().ToList();
+        }
+
         Console.WriteLine($"Found {puzzleTypes.Count} puzzles: {string.Join(", ", puzzleTypes.Select(x => x.Name))}");
         Console.WriteLine();
 

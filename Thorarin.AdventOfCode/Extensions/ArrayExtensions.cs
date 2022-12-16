@@ -14,5 +14,15 @@ public static class ArrayExtensions
                 array[d1, d2] = value;
             }
         } 
-    } 
+    }
+
+    public static void Fill<T>(this T[] array, T value)
+    {
+        int size1 = array.GetLength(0);
+
+        for (int d1 = 0; d1 < size1; d1++)
+        {
+            array[d1] = value;
+        }
+    }
 }
