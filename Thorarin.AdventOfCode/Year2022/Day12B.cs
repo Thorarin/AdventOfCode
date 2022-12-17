@@ -1,4 +1,5 @@
-﻿using Thorarin.AdventOfCode.Framework;
+﻿using System.Runtime.CompilerServices;
+using Thorarin.AdventOfCode.Framework;
 using Thorarin.AdventOfCode.Pathfinding;
 
 namespace Thorarin.AdventOfCode.Year2022;
@@ -35,7 +36,6 @@ public class Day12B : Puzzle
 
     public override Output ProblemExpectedOutput => 525;
 
-
     public override Output Run()
     {
         _width = _grid.GetLength(0);
@@ -63,47 +63,19 @@ public class Day12B : Puzzle
             }
         }
 
-        int min = int.MaxValue;
-
-        for (int x = 0; x < _width; x++)
-        {
-            for (int y = 0; y < _height; y++)
-            {
-                if (_posGrid[x, y].Height == 0)
-                {
-                    int length = Test(_posGrid[x, y]);
-                    if (length < min) min = length;
-                }
-            }
-        }
-
-        return min;
-    }
-
-    private int Test(Pos start)
-    {
         var aStar = new AStar<Pos>(AdjacentNodes);
 
-        bool success = aStar.TryPath(start, pos => pos == _end, pos => Math.Abs(pos.X - _end.X) + Math.Abs(pos.Y - _end.Y), out var result);
+        bool success = aStar.TryPath(_end, pos => pos.Height == 0, pos => 25 - pos.Height, out var result);
 
-        return success ? result.Path.Length : int.MaxValue;
+        return result.Path.Length;
     }
-
-
-    //protected IEnumerable<(Pos, int)> AdjacentNodes(Pos pos)
-    //{
-    //    if (pos.X > 0) yield return (_posGrid[pos.X - 1, pos.Y], _grid[pos.X - 1, pos.Y]);
-    //    if (pos.Y > 0) yield return (_posGrid[pos.X, pos.Y - 1], _grid[pos.X, pos.Y - 1]);
-    //    if (pos.X < _width - 1) yield return (_posGrid[pos.X + 1, pos.Y], _grid[pos.X + 1, pos.Y]);
-    //    if (pos.Y < _height - 1) yield return (_posGrid[pos.X, pos.Y + 1], _grid[pos.X, pos.Y + 1]);
-    //}
 
     protected IEnumerable<(Pos, int)> AdjacentNodes(Pos pos)
     {
         if (pos.X > 0)
         {
             var p = Get(pos.X - 1, pos.Y);
-            if (p.Item1.Height - pos.Height <= 1)
+            if (p.Item1.Height - pos.Height >= -1)
             {
                 yield return p;
             }
@@ -112,7 +84,7 @@ public class Day12B : Puzzle
         if (pos.Y > 0)
         {
             var p = Get(pos.X, pos.Y - 1);
-            if (p.Item1.Height - pos.Height <= 1)
+            if (p.Item1.Height - pos.Height >= -1)
             {
                 yield return p;
             }
@@ -121,17 +93,16 @@ public class Day12B : Puzzle
         if (pos.X < _width - 1)
         {
             var p = Get(pos.X + 1, pos.Y);
-            if (p.Item1.Height - pos.Height <= 1)
+            if (p.Item1.Height - pos.Height >= -1)
             {
                 yield return p;
             }
-
         }
 
         if (pos.Y < _height - 1)
         {
             var p = Get(pos.X, pos.Y + 1);
-            if (p.Item1.Height - pos.Height <= 1)
+            if (p.Item1.Height - pos.Height >= -1)
             {
                 yield return p;
             }
@@ -140,10 +111,55 @@ public class Day12B : Puzzle
         (Pos, int) Get(int x, int y)
         {
             var newPos = _posGrid[x, y];
-            return (newPos, 2 + pos.Height - newPos.Height);
+            return (newPos, -pos.Height + newPos.Height + 2);
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+
+    protected IEnumerable<(Pos Pos, int Cost)> AdjacentNodes2(Pos pos)
+    {
+        var adjacent = Get(pos.X - 1, pos.Y);
+        if (adjacent.HasValue)
+        {
+            yield return adjacent.Value;
+        }
+
+        adjacent = Get(pos.X, pos.Y - 1);
+        if (adjacent.HasValue)
+        {
+            yield return adjacent.Value;
+        }
+
+        adjacent = Get(pos.X + 1, pos.Y);
+        if (adjacent.HasValue)
+        {
+            yield return adjacent.Value;
+        }
+
+        adjacent = Get(pos.X, pos.Y + 1);
+        if (adjacent.HasValue)
+        {
+            yield return adjacent.Value;
+        }
+
+        (Pos Pos, int Cost)? Get(int x, int y)
+        {
+            if (x < 0 || x >= _width || y < 0 || y >= _height)
+            {
+                return null;
+            }
+
+            var newPos = _posGrid[x, y];
+            var cost = -pos.Height + newPos.Height + 2;
+            if (cost <= 0)
+            {
+                return null;
+            }
+
+            return (newPos, cost);
+        }
+    }
 
     public readonly record struct Pos(int X, int Y, int Height)
     {
