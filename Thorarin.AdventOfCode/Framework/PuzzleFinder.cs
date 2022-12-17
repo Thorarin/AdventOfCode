@@ -9,7 +9,7 @@ public class PuzzleFinder
     public PuzzleFinder()
     {
         Puzzles = typeof(Program).Assembly.GetTypes()
-            .Where(type => typeof(IPuzzle).IsAssignableFrom(type) && type.IsClass && !type.IsAbstract)
+            .Where(type => typeof(IPuzzle).IsAssignableFrom(type) && type.IsClass && !type.IsAbstract && type.GetCustomAttribute<PuzzleAttribute>() != null)
             .ToLookup(
                 type => new PuzzleIdentifier(type.GetCustomAttribute<PuzzleAttribute>()!),
                 type => type);        

@@ -56,6 +56,7 @@ public class Runner
             Console.ResetColor();
         }
 
+        RunContext.Reset();
         var sampleRunResult = await Run(type, sampleFileName, RunType.Sample);
         Console.WriteLine($"OK ({sampleRunResult.TotalDuration.FormatHumanReadable()})");
 
@@ -74,6 +75,7 @@ public class Runner
         
         for (int iteration = 0; iteration < iterations; iteration++)
         {
+            RunContext.Reset();
             var runResult = await Run(type, problemFileName, RunType.Problem);
             sumParse += runResult.ParseDuration;
             sumRun += runResult.RunDuration;
