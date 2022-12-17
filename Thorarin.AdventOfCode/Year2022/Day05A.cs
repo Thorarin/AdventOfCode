@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using Thorarin.AdventOfCode.Framework;
 
@@ -7,7 +8,7 @@ namespace Thorarin.AdventOfCode.Year2022;
 [Puzzle(Year = 2022, Day = 5, Part = 1)]
 public class Day05A : Puzzle
 {
-    private readonly List<Stack<char>> _stacks = new();
+    private readonly List<List<char>> _stacks = new();
     private readonly List<Instruction> _instructions = new();
 
     public override void ParseInput(TextReader reader)
@@ -20,18 +21,18 @@ public class Day05A : Puzzle
 
         for (var i = 0; i < nrOfStacks; i++)
         {
-            _stacks.Add(new Stack<char>());
+            _stacks.Add(new List<char>());
         }
 
         for (var i = height - 1; i >= 0; i--)
         {
             var crates = lines[i].Chunk(4).ToArray();
-            //var crates = lines[i].Substring(1, lines[i].Length - 2).Split("] [");
+
             for (int s = 0; s < crates.Length; s++)
             {
                 if (!char.IsWhiteSpace(crates[s][1]))
                 {
-                    _stacks[s].Push(crates[s][1]);
+                    _stacks[s].Add(crates[s][1]);
                 }
             }
         }
@@ -53,24 +54,29 @@ public class Day05A : Puzzle
     [Input("aoc_2022_day05_large_input.txt")]
     public Output TweakersLarge => "GATHERING";
 
-    [Input("aoc_2022_day05_large_input-3.txt")]
+    [Input("aoc_2022_day05_large_input-2.txt")]
     public Output TweakersLarger => "KERSTBOOM";
 
     public override Output Run()
     {
         foreach (var instruction in _instructions)
         {
-            for (int i = 0; i < instruction.Number; i++)
-            {
-                _stacks[instruction.To - 1].Push(_stacks[instruction.From - 1].Pop());
-            }
+            var amount = instruction.Number;
+            var to = _stacks[instruction.To - 1];
+            var from = _stacks[instruction.From - 1];
+
+            var move = from.GetRange(from.Count - amount, amount);
+            from.RemoveRange(from.Count - amount, amount);
+            move.Reverse();
+
+            to.AddRange(move);
         }
 
         StringBuilder sb = new();
 
         foreach (var s in _stacks)
         {
-            sb.Append(s.Pop());
+            sb.Append(s[^1]);
         }
 
         return sb.ToString();
