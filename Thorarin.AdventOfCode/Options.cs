@@ -18,4 +18,7 @@ public class Options
 
     [Option("warmup", HelpText = "Make sure code is pre-JITted by running with sample data once")]
     public bool Warmup { get; set; }
+
+    [Option("extra", HelpText = "Run puzzles for additional input files that may be defined")]
+    public bool RunExtraInputs { get; set; }
 }

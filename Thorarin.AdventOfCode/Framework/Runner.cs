@@ -13,12 +13,12 @@ public class Runner
         _serviceProvider = serviceProvider;
     }
     
-    public Task RunImplementation(Type type, int iterations, bool warmup)
+    public Task RunImplementation(Type type, int iterations, bool warmup, bool runExtraInputs)
     {
         try
         {
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-            return ConsoleRunner(type, iterations, warmup);
+            return ConsoleRunner(type, iterations, warmup, runExtraInputs);
         }
         finally
         {
@@ -26,7 +26,7 @@ public class Runner
         }
     }
 
-    private async Task ConsoleRunner(Type type, int iterations, bool warmup)
+    private async Task ConsoleRunner(Type type, int iterations, bool warmup, bool runExtraInputs)
     {
         var attr = type.GetCustomAttribute<PuzzleAttribute>()!;
         Console.WriteLine($"Running {attr.Year}-{attr.Day}-{attr.Part}, implementation: {type.Name}");
@@ -101,26 +101,29 @@ public class Runner
             }
         }
 
-        foreach (var extras in DiscoverExtraInputs(type))
+        if (runExtraInputs)
         {
-            Console.Write($"Running using extra data ({extras.FileName})... ");
-            string filePath = Path.Combine(path, extras.FileName);
-
-            if (!File.Exists(filePath))
+            foreach (var extras in DiscoverExtraInputs(type))
             {
-                Console.WriteLine("SKIPPED (File Not Found)");
-                continue;
-            }
+                Console.Write($"Running using extra data ({extras.FileName})... ");
+                string filePath = Path.Combine(path, extras.FileName);
 
-            var runResult = await Run(type, filePath, extras.Expected);
-            Console.WriteLine($"OK ({runResult.TotalDuration.FormatHumanReadable()})");
-            WarnOnOutputIncorrect(runResult.Expected, runResult.Output);
-            if (runResult.Expected == null)
-            {
-                Console.WriteLine($"Extra: {runResult.Output}");
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine("SKIPPED (File Not Found)");
+                    continue;
+                }
+
+                var runResult = await Run(type, filePath, extras.Expected);
+                Console.WriteLine($"OK ({runResult.TotalDuration.FormatHumanReadable()})");
+                WarnOnOutputIncorrect(runResult.Expected, runResult.Output);
+                if (runResult.Expected == null)
+                {
+                    Console.WriteLine($"Extra: {runResult.Output}");
+                }
             }
         }
-        
+
         var averageParse = sumParse / iterations;
         var averageRun = sumRun / iterations;
         var total = averageParse + averageRun;

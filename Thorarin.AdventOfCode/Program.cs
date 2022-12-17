@@ -76,7 +76,7 @@ internal class Program
         
         foreach (var puzzleType in puzzleTypes)
         {
-            await runner.RunImplementation(puzzleType, options.Iterations, options.Warmup);
+            await runner.RunImplementation(puzzleType, options.Iterations, options.Warmup, options.RunExtraInputs);
             Console.WriteLine();
         }
     }
