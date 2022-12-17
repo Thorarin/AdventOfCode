@@ -1,21 +1,20 @@
-﻿using System.Diagnostics;
-using Thorarin.AdventOfCode.Framework;
+﻿using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2022;
 
 [Puzzle(Year = 2022, Day = 17, Part = 2)]
 public class Day17B : Puzzle
 { 
-    private string _jets;
+    private string _jets = "";
 
     public override void ParseInput(TextReader reader)
     {
-        _jets = reader.ReadLine();
+        _jets = reader.ReadLine()!;
     }
 
     public override Output SampleExpectedOutput => 1_514_285_714_288;
 
-    public override Output ProblemExpectedOutput => 1577077363915;
+    public override Output ProblemExpectedOutput => 1_577_077_363_915;
 
     public override Output Run()
     {
@@ -32,7 +31,7 @@ public class Day17B : Puzzle
         long extraHeight = 0;
 
         bool[,] tower = new bool[10_000, 7];
-        Dictionary<(int Pos, int BlockType, int Pattern), (long Count, int Height)> repeatDetector = new();
+        Dictionary<(int Pos, int BlockType, long Pattern), (long Count, int Height)> repeatDetector = new();
         bool doneRepeats = false;
 
         long count = 0;
@@ -61,17 +60,20 @@ public class Day17B : Puzzle
 
             if (!doneRepeats)
             {
+                // Try and find a pattern in how the blocks are stacking up
                 var repeat = FindPattern(jetPos, blockType);
                 if (repeat.HasValue)
                 {
-                    var repeats = (rocks - count) / repeat.Value.Blocks;
-                    extraHeight = repeats * repeat.Value.Height;
-                    count += repeats * repeat.Value.Blocks;
+                    // A repeating pattern has been found.
+                    // How many times do we have to repeat it?
+                    var repeats = (rocks - count) / repeat.Value.BlockCount;
+                    extraHeight = repeats * repeat.Value.RowCount;
+                    count += repeats * repeat.Value.BlockCount;
                     doneRepeats = true;
                 }
             }
 
-            if (height >= tower.GetLength(0) - 5)
+            if (height >= tower.GetLength(0) - 10)
             {
                 return "Ran out of space before finding pattern";
             }
@@ -117,46 +119,65 @@ public class Day17B : Puzzle
             }
         }
 
-        (long Blocks, int Height)? FindPattern(int jet, int blockNr)
+        (long BlockCount, int RowCount)? FindPattern(int jet, int blockNr)
         {
-            if (height <= 5) return default;
-            int y = height - 1;
+            if (height <= 10) return default;
 
-            int pattern = 0;
-            for (int x = 0; x < 7; x++)
+            // Mash 8 rows into a 64 bit integer for tracking purposes.
+            // More than 8 rows could be relevant, but I can't easily fit them
+            // in a variable and the ConfirmPattern method should take care of false positives.
+            long pattern = 0;
+            for (int y = height; y >= height - 8; y--)
             {
-                if (tower[height, x])
+                for (int x = 0; x < 7; x++)
                 {
-                    pattern |= (1 << x);
+                    if (tower[y, x])
+                    {
+                        pattern |= 1L << x;
+                    }
+                }
+
+                pattern <<= 8;
+            }
+
+            // The combined state of position in the input and the next block type
+            // are used to detect patterns. The top 8 rows are also included.
+            var key = (Pos: jet, Type: blockNr, pattern);
+            if (repeatDetector.TryGetValue(key, out var lastSeen))
+            {
+                var patternCandidate = (Count: count - lastSeen.Count, Height: height - lastSeen.Height);
+
+                if (ConfirmPattern(patternCandidate.Height))
+                {
+                    return patternCandidate;
                 }
             }
 
-            bool fullRow = true;
-            for (int x = 0; x < 7; x++)
-            {
-                if (!tower[y, x])
-                {
-                    fullRow = false;
-                    break;
-                }
-            }
-
-            if (!fullRow) return default;
-
-            var key = (pos: jet, type: blockNr, pattern);
-            if (repeatDetector.TryGetValue(key, out var last))
-            {
-                var repeatBlocks = count - last.Count;
-                var repeatHeight = height - last.Height;
-                //Console.WriteLine();
-                //Console.WriteLine(
-                //    $"Repeat found: {repeatHeight} height increase with {repeatBlocks} blocks (Jet: {jet}, Block Type: {blockNr}, Pattern: {pattern})");
-                return (repeatBlocks, repeatHeight);
-            }
-
-            repeatDetector.Add(key, (count, height));
+            repeatDetector[key] = (count, height);
 
             return default;
+        }
+
+        bool ConfirmPattern(int patternHeight)
+        {
+            // In order to confirm, we need at least 2 repeats of the pattern
+            // For debugging, I might want to check more...
+            int repeats = height / patternHeight - 1;
+            if (repeats < 2) return false;
+
+            for (int i = 1; i < repeats; i++)
+            {
+                for (int y = height; y >= height - patternHeight; y--)
+                {
+                    for (int x = 0; x < 7; x++)
+                    {
+                        if (tower[y - i * patternHeight, x] != tower[y, x])
+                            return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         int NextJet()
@@ -205,5 +226,4 @@ public class Day17B : Puzzle
 
         return blocks;
     }
-
 }
