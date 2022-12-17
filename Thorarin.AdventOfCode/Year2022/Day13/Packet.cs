@@ -1,4 +1,5 @@
 ﻿using MoreLinq;
+using System;
 
 namespace Thorarin.AdventOfCode.Year2022.Day13
 {
@@ -28,15 +29,26 @@ namespace Thorarin.AdventOfCode.Year2022.Day13
                 if (this is ListPacket left && other is ListPacket right)
                 {
                     // Both sides are ListPackets
-                    foreach (var (innerLeft, innerRight) in left.Packets.ZipShortest(right.Packets, (a, b) => (a, b)))
+                    int length = Math.Min(left.Packets.Count, right.Packets.Count);
+                    for (int i = 0; i < length; i++)
                     {
-                        var comparison = innerLeft.CompareTo(innerRight);
+                        var comparison = left.Packets[i].CompareTo(right.Packets[i]);
                         if (comparison != 0)
                         {
                             //Console.WriteLine(comparison);
                             return comparison;
                         }
                     }
+
+                    //foreach (var (innerLeft, innerRight) in left.Packets.ZipShortest(right.Packets, (a, b) => (a, b)))
+                    //{
+                    //    var comparison = innerLeft.CompareTo(innerRight);
+                    //    if (comparison != 0)
+                    //    {
+                    //        //Console.WriteLine(comparison);
+                    //        return comparison;
+                    //    }
+                    //}
 
                     return left.Packets.Count - right.Packets.Count;
                 }

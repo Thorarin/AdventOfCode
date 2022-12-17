@@ -7,7 +7,7 @@ namespace Thorarin.AdventOfCode.Year2022;
 [Puzzle(Year = 2022, Day = 13, Part = 1)]
 public class Day13A : Puzzle
 {
-    private List<(Packet, Packet)> _packets;
+    private List<(Packet Left, Packet Right)> _packets;
 
     public override void ParseInput(TextReader reader)
     {
@@ -30,10 +30,15 @@ public class Day13A : Puzzle
     public override Output Run()
     {
         var indices = _packets
-            .Select((pair, index) => (pair.Item1.CompareTo(pair.Item2), index))
-            .Where(x => x.Item1 < 0)
-            .Select(x => x.index + 1)
+            .Select((pair, index) => (Comparison: pair.Left.CompareTo(pair.Right), Index: index + 1))
+            .Where(x => x.Comparison < 0)
+            .Select(x => x.Index)
             .ToList();
+
+        return _packets
+            .Select((pair, index) => (Comparison: pair.Left.CompareTo(pair.Right), Index: index + 1))
+            .Where(x => x.Comparison < 0)
+            .Sum(x => x.Index);
 
         return indices.Sum();
     }
