@@ -44,7 +44,7 @@ public class Day18B : Puzzle
         }
     }
 
-    public override Output SampleExpectedOutput =>58;
+    public override Output SampleExpectedOutput => 58;
 
     public override Output ProblemExpectedOutput => 2018;
 
@@ -59,11 +59,11 @@ public class Day18B : Puzzle
     {
         var water = Flood(voxels);
 
-        for (int x = margin; x < _lava.GetLength(0) - margin; x++)
+        for (int x = margin; x < voxels.GetLength(0) - margin; x++)
         {
-            for (int y = margin; y < _lava.GetLength(1) - margin; y++)
+            for (int y = margin; y < voxels.GetLength(1) - margin; y++)
             {
-                for (int z = margin; z < _lava.GetLength(2) - margin; z++)
+                for (int z = margin; z < voxels.GetLength(2) - margin; z++)
                 {
                     if (!voxels[x, y, z] && !water[x, y, z])
                     {
@@ -90,7 +90,7 @@ public class Day18B : Puzzle
                 {
                     for (int z = 1; z < voxels.GetLength(2) - 1; z++)
                     {
-                        if (water[x, y, z] || _lava[x, y, z]) continue;
+                        if (water[x, y, z] || voxels[x, y, z]) continue;
 
                         if (water[x - 1, y, z] || water[x + 1, y, z] || water[x, y - 1, z] ||
                             water[x, y + 1, z] || water[x, y, z - 1] || water[x, y, z + 1])
@@ -115,7 +115,7 @@ public class Day18B : Puzzle
             {
                 for (int z = margin; z < voxels.GetLength(2) - margin; z++)
                 {
-                    if (_lava[x, y, z])
+                    if (voxels[x, y, z])
                     {
                         if (!voxels[x - 1, y, z]) sides++;
                         if (!voxels[x + 1, y, z]) sides++;
