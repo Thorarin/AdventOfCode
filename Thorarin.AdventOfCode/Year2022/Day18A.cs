@@ -21,12 +21,9 @@ public class Day18A : Puzzle
         int count = 0;
         foreach (var voxel in voxels)
         {
-            //if (voxel[0] == 0 || voxel[1] == 0 || voxel[2] == 0) throw new Exception();
             _voxels[voxel[0] + 1, voxel[1] + 1, voxel[2] + 1] = true;
             count++;
         }
-
-        Console.WriteLine(count);
     }
 
     public override Output SampleExpectedOutput => 64;
