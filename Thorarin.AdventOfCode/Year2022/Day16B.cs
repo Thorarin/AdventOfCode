@@ -63,7 +63,7 @@ public class Day16B : Puzzle
                 {
                     _maxTotalPressure = pressure;
                     moves = bla;
-                    Console.WriteLine(_maxTotalPressure);
+                    RunContext.Out.WriteLine(_maxTotalPressure);
                 }
             }
         }
@@ -82,7 +82,7 @@ public class Day16B : Puzzle
             a.Do(state);
         }
 
-        Console.WriteLine($"Intermediate {state.PressureTotal}");
+        RunContext.Out.WriteLine($"Intermediate {state.PressureTotal}");
 
         state.Moves.Clear();
         state.ElapsedTime = 0;
@@ -105,16 +105,16 @@ public class Day16B : Puzzle
                 {
                     _maxTotalPressure = pressure;
                     moves = bla;
-                    Console.WriteLine(_maxTotalPressure);
+                    RunContext.Out.WriteLine(_maxTotalPressure);
                 }
             }
         }
 
         foreach (var a in moves)
         {
-            Console.WriteLine($"Minute {state.ElapsedTime}");
+            RunContext.Out.WriteLine($"Minute {state.ElapsedTime}");
             //Console.WriteLine($"Released: {state.PressurePerMinute}");
-            Console.WriteLine(a.ToString());
+            RunContext.Out.WriteLine(a.ToString());
             a.Do(state);
         }
 
@@ -165,7 +165,7 @@ public class Day16B : Puzzle
                 if (pressure > _maxTotalPressure)
                 {
                     _maxTotalPressure = pressure;
-                    Console.WriteLine(_maxTotalPressure);
+                    RunContext.Out.WriteLine(_maxTotalPressure);
                 }
                 
             }

@@ -4,13 +4,13 @@ public abstract class Puzzle : IPuzzle
 {
     public abstract void ParseInput(TextReader reader);
 
-    public virtual Output? SampleExpectedOutput => default;
+    public virtual IOutput? SampleExpectedOutput => default;
 
-    public virtual Output? ProblemExpectedOutput => default;
+    public virtual IOutput? ProblemExpectedOutput => default;
 
-    public abstract Output Run();
+    public abstract IOutput Run();
     
-    Task<Output> IPuzzle.Run()
+    Task<IOutput> IPuzzle.Run()
     {
         return Task.FromResult(Run());
     }

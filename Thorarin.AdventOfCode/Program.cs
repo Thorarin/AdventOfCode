@@ -69,15 +69,13 @@ internal class Program
             puzzleTypes = query.Find().ToList();
         }
 
-        Console.WriteLine($"Found {puzzleTypes.Count} puzzles: {string.Join(", ", puzzleTypes.Select(x => x.Name))}");
-        Console.WriteLine();
+        RunnerBase runner = options.TableOutput ? new TableRunner(serviceProvider) : new ConsoleRunner(serviceProvider);
 
-        var runner = new Runner(serviceProvider);
-        
+        runner.BeforeRuns(puzzleTypes);
+
         foreach (var puzzleType in puzzleTypes)
         {
             await runner.RunImplementation(puzzleType, options.Iterations, options.Warmup, options.RunExtraInputs);
-            Console.WriteLine();
         }
     }
 

@@ -4,9 +4,9 @@ public abstract class PuzzleAsync : IPuzzle
 {
     public abstract void ParseInput(TextReader reader);
 
-    public virtual Output? SampleExpectedOutput => default;
+    public virtual IOutput? SampleExpectedOutput => default;
 
-    public virtual Output? ProblemExpectedOutput => default;
+    public virtual IOutput? ProblemExpectedOutput => default;
 
-    public abstract Task<Output> Run();
+    public abstract Task<IOutput> Run();
 }

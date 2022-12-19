@@ -100,6 +100,7 @@ namespace Thorarin.AdventOfCode.Ocr
             });
 
             var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(10);
 
             var response = await client.PostAsync("https://api.ocr.space/parse/image", formContent);
             response.EnsureSuccessStatusCode();

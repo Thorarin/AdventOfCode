@@ -23,7 +23,7 @@ public class Day04A : PuzzleAsync
         }
     }
 
-    public override Task<Output> Run()
+    public override Task<IOutput> Run()
     {
         foreach (var number in _drawnNumbers)
         {
@@ -32,7 +32,7 @@ public class Day04A : PuzzleAsync
                 int? score = card.MarkOff(number);
                 if (score.HasValue)
                 {
-                    return Task.FromResult<Output>(score);
+                    return Task.FromResult<IOutput>((Output)score);
                 }
             }
         }

@@ -1,5 +1,6 @@
 ﻿using Thorarin.AdventOfCode.Framework;
 using Thorarin.AdventOfCode.Ocr;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Thorarin.AdventOfCode.Year2022;
 
@@ -24,7 +25,7 @@ public class Day10B : IPuzzle
 
     public Output ProblemExpectedOutput => "EGLHBLFJ";
 
-    public async Task<Output> Run()
+    public async Task<IOutput> Run()
     {
         int x = 1;
         int cycle = 0;
@@ -55,8 +56,17 @@ public class Day10B : IPuzzle
         }
 
         // DumpScreen();
+        try
+        {
+            string text = await _ocrService.OcrBitmap(_screen, 40, 6);
+            return new StringOutput(text);
 
-        return await _ocrService.OcrBitmap(_screen, 40, 6);
+        }
+        catch (Exception e)
+        {
+            RunContext.Out.WriteLine(e);
+            return new StringOutput("OCR FAIL");
+        }
     }
 
     private void UpdateScreen(int cycle, int x)
@@ -71,14 +81,14 @@ public class Day10B : IPuzzle
 
     private void DumpScreen()
     {
-        Console.WriteLine();
+        RunContext.Out.WriteLine();
         for (int v = 0; v < 6; v++)
         {
             for (int h = 0; h < 40; h++)
             {
-                Console.Write(_screen[v * 40 + h] ? "#" : ".");
+                RunContext.Out.Write(_screen[v * 40 + h] ? "#" : ".");
             }
-            Console.WriteLine();
+            RunContext.Out.WriteLine();
         }
     }
 }

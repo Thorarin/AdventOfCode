@@ -1,9 +1,6 @@
-﻿using System.Reflection;
-using System.Text;
+﻿namespace Thorarin.AdventOfCode.Framework;
 
-namespace Thorarin.AdventOfCode.Framework;
-
-public abstract record Output
+public abstract record Output : IOutput
 {
     public static implicit operator Output(long output)
     {

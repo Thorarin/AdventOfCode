@@ -21,4 +21,7 @@ public class Options
 
     [Option("extra", HelpText = "Run puzzles for additional input files that may be defined")]
     public bool RunExtraInputs { get; set; }
+
+    [Option("table", HelpText = "Display run puzzles in table form")]
+    public bool TableOutput { get; set; }
 }

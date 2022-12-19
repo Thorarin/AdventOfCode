@@ -68,16 +68,16 @@ public class Day14A : Puzzle
             count++;
         }
 
-        Console.WriteLine();
+        RunContext.Out.WriteLine();
         for (int y = 0; y < _maxY; y++)
         {
             for (int x = 493; x < _maxX; x++)
             {
-                Console.Write(_grid[x, y] == 0 ? ' ' : _grid[x, y]);
+                RunContext.Out.Write(_grid[x, y] == 0 ? ' ' : _grid[x, y]);
             }
-            Console.WriteLine();
+            RunContext.Out.WriteLine();
         }
-        Console.WriteLine();
+        RunContext.Out.WriteLine();
 
         return count;
     }

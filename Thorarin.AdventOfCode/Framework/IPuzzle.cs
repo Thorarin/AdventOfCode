@@ -7,13 +7,13 @@ public interface IPuzzle
 {
     public void ParseInput(TextReader reader);
 
-    public Output? SampleExpectedOutput => default;
+    public IOutput? SampleExpectedOutput => default;
 
-    public Output? ProblemExpectedOutput => default;
+    public IOutput? ProblemExpectedOutput => default;
     
-    public Task<Output> Run();
+    public Task<IOutput> Run();
 
-    public Output? GetExpectedOutput(RunType runType)
+    public IOutput? GetExpectedOutput(RunType runType)
     {
         return runType switch
         {
