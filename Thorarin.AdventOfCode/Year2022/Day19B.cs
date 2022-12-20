@@ -31,11 +31,10 @@ public class Day19B : Day19Base
     private int Simulate(Blueprint blueprint)
     {
         int overallBest = 0;
+        Dictionary<StateKey, State> cache = new();
 
-        Dictionary<(State, int), State> cache = new();
-
-        var state = InitializeState(blueprint);
-        var best = Simulate(state, Minutes, cache, ref overallBest);
+        var state = InitializeState(blueprint, Minutes);
+        var best = Simulate(state, cache, ref overallBest);
 
         return best.Geode.Current;
     }

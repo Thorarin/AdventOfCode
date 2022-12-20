@@ -25,6 +25,18 @@ public class MathEx
         return tmp >= 0 ? tmp : tmp + b;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Max(int a, int b, int c)
+    {
+        return Math.Max(Math.Max(a, b), c);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Max(int a, int b, int c, int d)
+    {
+        return Math.Max(Math.Max(a, b), Math.Max(c, d));
+    }
+
     /// <summary>
     /// Returns the least common multiplier.
     /// </summary>
@@ -35,6 +47,7 @@ public class MathEx
     /// For example, the termial of 5 is 1+2+3+4+5=15.
     /// https://proofwiki.org/wiki/Definition:Termial
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Termial(int number) => number * (number + 1) / 2;
 
     /// <summary>
@@ -42,6 +55,7 @@ public class MathEx
     /// For example, the termial of 5 is 1+2+3+4+5=15.
     /// https://proofwiki.org/wiki/Definition:Termial
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Termial(long number) => number * (number + 1) / 2;
 
     /// <summary>

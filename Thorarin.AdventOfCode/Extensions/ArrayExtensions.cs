@@ -34,12 +34,13 @@ public static class ArrayExtensions
         var movedElement = array[from];
         var length = from - to;
 
+        if (length == 0) return;
+
         if (length > 0)
         {
             Array.Copy(array, to, array, to + 1, length);
         }
-
-        if (length < 0)
+        else 
         {
             Array.Copy(array, from + 1, array, from, -length);
         }

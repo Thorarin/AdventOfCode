@@ -11,6 +11,11 @@ namespace Thorarin.AdventOfCode.Framework
         private static volatile string? _pendingStatus;
         private static bool _consoleOutput;
 
+        static RunContext()
+        {
+            Out = Console.Out;
+        }
+
         public static bool ConsoleOutput
         {
             get => _consoleOutput;

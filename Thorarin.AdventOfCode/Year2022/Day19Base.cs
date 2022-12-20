@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Microsoft.VisualBasic.CompilerServices;
 using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2022;
@@ -26,24 +30,25 @@ public abstract class Day19Base : Puzzle
         }
     }
 
-    protected State InitializeState(Blueprint blueprint)
+    protected State InitializeState(Blueprint blueprint, int remaining)
     {
         return new State(
             blueprint,
             new ResourceState(0, 1, new[] { blueprint.ClayRobot.Ore, blueprint.ObsidianRobot.Ore, blueprint.GeodeRobot.Ore }.Max()),
             new ResourceState(0, 0, blueprint.ObsidianRobot.Clay),
             new ResourceState(0, 0, blueprint.GeodeRobot.Obsidian),
-            new ResourceState(0, 0, int.MaxValue));
+            new ResourceState(0, 0, int.MaxValue),
+            remaining);
     }
 
-    protected State Simulate(State state, int remaining, Dictionary<(State, int), State> cache, ref int overallBest)
+    protected State Simulate(State state, Dictionary<StateKey, State> cache, ref int overallBest)
     {
-        if (cache.TryGetValue((state, remaining), out var cachedState))
+        if (cache.TryGetValue(state.Key, out var cachedState))
         {
             return cachedState;
         }
 
-        if (remaining == 0)
+        if (state.Remaining == 0)
         {
             if (state.Geode.Current > overallBest)
             {
@@ -56,11 +61,11 @@ public abstract class Day19Base : Puzzle
 
         State best = state;
 
-        foreach (var move in Moves(state, remaining))
+        foreach (var move in Moves(state))
         {
-            if (state.CalcBestPossible(remaining) > overallBest)
+            if (state.CalcBestPossible(state.Remaining) > overallBest)
             {
-                var next = Simulate(move, remaining - 1, cache, ref overallBest);
+                var next = Simulate(move, cache, ref overallBest);
                 if (next.Geode.Current > best.Geode.Current)
                 {
                     best = next;
@@ -68,56 +73,91 @@ public abstract class Day19Base : Puzzle
             }
         }
 
-        cache[(state, remaining)] = best;
+        cache[state.Key] = best;
 
         return best;
     }
 
-    private static IEnumerable<State> Moves(State state, int remaining)
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    private static IEnumerable<State> Moves(State state)
     {
-        if (state.CanBuild(Robot.Geode, remaining))
+        // T -1:
+        // In the last minute, building new robots is useless, as they won't
+        // have harvested any resources at T.
+        //
+        // T -2:
+        // Only building geode robots is useful, as the other robots only
+        // facilitate building geode robots.
+        //
+        // T -3:
+        // Same as T -2, as robots need another minute to yield resources.
+        //
+        // T -4:
+        // Obsidian and ore robots can also be built, since they may lead to
+        // a geode robot getting build on T -2.
+        //
+        // T -5:
+        // Same as T -4, as robots need another minute to yield resources.
+        // 
+        // T -6:
+        // Clay robots can also be built, so they have harvested clay by the start
+        // of T -4, which is the last minute in which construction of an obsidian
+        // robot can meaningfully start.
+
+
+        // There are supposedly edge cases where this rule would not apply,
+        // but it's not a problem for my input or any others, as far as I know.
+        if (state.Remaining >= 2 && state.CanBuild(Robot.Geode))
         {
             yield return state.Build(Robot.Geode);
             yield break;
         }
 
-        int neededObsidian = state.Blueprint.ObsidianRobot.Obsidian - state.Obsidian.Current;
-
-        if (state.Obsidian.Robots < state.Obsidian.Max && remaining > neededObsidian)
+        if (state.Remaining >= 4)
         {
-            if (state.CanBuild(Robot.Obsidian, remaining))
+            if (state.CanBuild(Robot.Obsidian))
                 yield return state.Build(Robot.Obsidian);
 
-            if (MathEx.Termial(remaining) * state.Blueprint.GeodeRobot.Obsidian > state.Blueprint.ObsidianRobot.Clay)
+            if (state.Remaining >= 6)
             {
-                if (state.CanBuild(Robot.Clay, remaining))
+                if (state.CanBuild(Robot.Clay))
                     yield return state.Build(Robot.Clay);
             }
-        }
 
-        bool needOre = state.Obsidian.Robots < state.Obsidian.Max ||
-                       state.Ore.Robots < state.Blueprint.GeodeRobot.Ore;
-
-        bool willBreakEven = remaining > state.Blueprint.OreRobot.Ore;
-
-        if (needOre && willBreakEven)
-        {
-            if (state.CanBuild(Robot.Ore, remaining))
-            {
+            if (state.CanBuild(Robot.Ore))
                 yield return state.Build(Robot.Ore);
-                yield break;
-            }
         }
 
         yield return state.Wait();
     }
 
-    protected readonly record struct State(Blueprint Blueprint, ResourceState Ore, ResourceState Clay, ResourceState Obsidian, ResourceState Geode)
+    protected readonly record struct StateKey(int Ore, int OreRobots, int Clay, int ClayRobots, int Obsidian, int ObsidianRobots, int Remaining);
+
+    protected record State(Blueprint Blueprint, ResourceState Ore, ResourceState Clay, ResourceState Obsidian, ResourceState Geode, int Remaining)
     {
-        public bool CanBuild(Robot robot, int remaining)
+        public int BuildStop { get; set; }
+
+        public State(Blueprint blueprint, ResourceState ore, ResourceState clay, ResourceState obsidian, ResourceState geode, int remaining, int buildStop) 
+            : this(blueprint, ore, clay, obsidian, geode, remaining)
         {
+            BuildStop = buildStop;
+        }
+
+        public bool CanBuild(Robot robot)
+        {
+            if ((BuildStop & (int)robot) != 0) return false;
+
             var resource = GetResource(robot);
-            if (resource.Robots >= resource.Max) return false;
+            if (resource.Robots >= resource.MaxRobots) return false;
+
+            // If we have enough resources of this type to build any robot type for the remaining minutes, don't build more robots.
+            // Credit: https://www.reddit.com/r/adventofcode/comments/zpy5rm/2022_day_19_what_are_your_insights_and/
+            // Improvement: Robots built in the last minute are useless, so use minutes remaining minus one.
+            if (robot != Robot.Geode && resource.Robots * (Remaining - 1) + resource.Current >= (Remaining - 1) * Blueprint.Max[robot])
+            {
+                BuildStop |= (int)robot;
+                return false;
+            }
 
             var cost = GetCost(robot);
             return cost.Ore <= Ore.Current && cost.Clay <= Clay.Current && cost.Obsidian <= Obsidian.Current;
@@ -130,7 +170,9 @@ public abstract class Day19Base : Puzzle
                 Ore with { Current = Ore.Current + Ore.Robots },
                 Clay with { Current = Clay.Current + Clay.Robots },
                 Obsidian with { Current = Obsidian.Current + Obsidian.Robots },
-                Geode with { Current = Geode.Current + Geode.Robots });
+                Geode with { Current = Geode.Current + Geode.Robots },
+                Remaining - 1,
+                BuildStop);
         }
 
         public State Build(Robot robot)
@@ -158,7 +200,9 @@ public abstract class Day19Base : Puzzle
                 {
                     Current = Geode.Current + Geode.Robots,
                     Robots = Geode.Robots + (robot == Robot.Geode ? 1 : 0)
-                });
+                },
+                Remaining - 1,
+                BuildStop);
         }
 
         private Cost GetCost(Robot robot)
@@ -186,34 +230,63 @@ public abstract class Day19Base : Puzzle
 
         public int CalcBestPossible(int remaining)
         {
-            return Geode.Current + (remaining * Geode.Robots) + MathEx.Termial(remaining);
+            return Geode.Current + (remaining * Geode.Robots) + MathEx.Termial(remaining - 1);
         }
+
+        public StateKey Key => new(Ore.Current, Ore.Robots, Clay.Current, Clay.Robots, Obsidian.Current, Obsidian.Robots, Remaining);
     }
 
-    protected record ResourceState(int Current, int Robots, int Max);
+    protected readonly record struct ResourceState(int Current, int Robots, int MaxRobots);
 
     protected record Blueprint(int Number, Cost OreRobot, Cost ClayRobot, Cost ObsidianRobot, Cost GeodeRobot)
     {
+        private Cost? _max;
+
+        public Cost Max
+        {
+            get
+            {
+                if (_max == null)
+                {
+                    _max = new Cost(
+                        MathEx.Max(OreRobot.Ore, ClayRobot.Ore, ObsidianRobot.Ore, GeodeRobot.Ore),
+                        MathEx.Max(OreRobot.Clay, ClayRobot.Clay, ObsidianRobot.Clay, GeodeRobot.Clay),
+                        MathEx.Max(OreRobot.Obsidian, ClayRobot.Obsidian, ObsidianRobot.Obsidian, GeodeRobot.Obsidian));
+                }
+
+                return _max;
+            }
+        }
+    };
+
+    protected record Cost(int Ore, int Clay, int Obsidian)
+    {
+        public int this[Robot index] => index switch
+        {
+            Robot.Ore => Ore,
+            Robot.Clay => Clay,
+            Robot.Obsidian => Obsidian,
+            _ => throw new ArgumentOutOfRangeException(nameof(index), index, null)
+        };
     }
 
-    protected readonly record struct Cost(int Ore, int Clay, int Obsidian)
-    {
-    }
     protected enum Robot
     {
-        Ore = 0,
-        Clay = 1,
-        Obsidian = 2,
-        Geode = 3
+        Ore = 1,
+        Clay = 2,
+        Obsidian = 4,
+        Geode = 8
     }
 
     protected class Answer : IOutput
     {
-        public Answer(long Value, IList<int> Intermediate)
+        public Answer(long value, IList<int> intermediate)
         {
-            this.Value = Value;
-            this.Intermediate = Intermediate;
+            Value = value;
+            Intermediate = intermediate;
         }
+        public long Value { get; }
+        public IList<int> Intermediate { get; }
 
         protected bool Equals(Answer other)
         {
@@ -237,8 +310,5 @@ public abstract class Day19Base : Puzzle
         {
             return $"{Value} ({string.Join(", ", Intermediate)})";
         }
-
-        public long Value { get; }
-        public IList<int> Intermediate { get; }
     }
 }
