@@ -25,4 +25,25 @@ public static class ArrayExtensions
             array[d1] = value;
         }
     }
+
+    /// <summary>
+    /// Removes an element from one position in an array, then inserts it in another.
+    /// </summary>
+    public static void Move<T>(this T[] array, int from, int to)
+    {
+        var movedElement = array[from];
+        var length = from - to;
+
+        if (length > 0)
+        {
+            Array.Copy(array, to, array, to + 1, length);
+        }
+
+        if (length < 0)
+        {
+            Array.Copy(array, from + 1, array, from, -length);
+        }
+
+        array[to] = movedElement;
+    }
 }

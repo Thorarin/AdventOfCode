@@ -1,4 +1,6 @@
-﻿namespace Thorarin.AdventOfCode;
+﻿using System.Runtime.CompilerServices;
+
+namespace Thorarin.AdventOfCode;
 
 public class MathEx
 {
@@ -14,6 +16,13 @@ public class MathEx
             return b;
 
         return Gcd(b, a % b);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static long Modulo(long a, long b)
+    {
+        long tmp = a % b;
+        return tmp >= 0 ? tmp : tmp + b;
     }
 
     /// <summary>

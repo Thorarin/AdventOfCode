@@ -1,4 +1,5 @@
-﻿using Thorarin.AdventOfCode.Framework;
+﻿using Thorarin.AdventOfCode.Extensions;
+using Thorarin.AdventOfCode.Framework;
 
 namespace Thorarin.AdventOfCode.Year2022;
 
@@ -13,26 +14,24 @@ public abstract class Day20Base : Puzzle
 
     protected long Mix(IEnumerable<int> list, long key, int cycles)
     {
-        var mixer = list.Select((value, pos) => (Value: value * key, Position: pos)).ToList();
+        var mixer = list.Select((value, pos) => (Value: value * key, Position: pos)).ToArray();
 
         for (int cycle = 0; cycle < cycles; cycle++)
         {
-            for (int j = 0; j < mixer.Count; j++)
+            for (int j = 0; j < mixer.Length; j++)
             {
-                int index = mixer.FindIndex(x => x.Position == j);
+                int index = Array.FindIndex(mixer, x => x.Position == j);
                 var value = mixer[index];
-                mixer.RemoveAt(index);
-
-                int newIndex = (int)((index + value.Value) % mixer.Count);
-                if (newIndex < 0) newIndex += mixer.Count;
-                mixer.Insert(newIndex, value);
+                int newIndex = (int)MathEx.Modulo(index + value.Value, mixer.Length - 1);
+                
+                mixer.Move(index, newIndex);
             }
         }
 
-        var zero = mixer.FindIndex(x => x.Value == 0);
+        var zero = Array.FindIndex(mixer, x => x.Value == 0);
 
-        return mixer[(zero + 1000) % mixer.Count].Value +
-               mixer[(zero + 2000) % mixer.Count].Value +
-               mixer[(zero + 3000) % mixer.Count].Value;
+        return mixer[(zero + 1000) % mixer.Length].Value +
+               mixer[(zero + 2000) % mixer.Length].Value +
+               mixer[(zero + 3000) % mixer.Length].Value;
     }
 }
