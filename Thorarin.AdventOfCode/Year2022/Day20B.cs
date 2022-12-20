@@ -9,6 +9,9 @@ public class Day20B : Day20Base
 
     public override Output ProblemExpectedOutput => 4_248_669_215_955;
 
+    [Input("day20-problem-jacob.txt")]
+    public Output JacobExpectedOutput => 12374299815791;
+
     public override Output Run()
     {
         return  Mix(_input, 811589153, 10);
