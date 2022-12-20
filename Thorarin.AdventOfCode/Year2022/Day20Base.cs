@@ -20,7 +20,7 @@ public abstract class Day20Base : Puzzle
         {
             for (int j = 0; j < mixer.Length; j++)
             {
-                int index = Array.FindIndex(mixer, x => x.Position == j);
+                int index = FindIndexOfOriginalPosition(j);
                 var value = mixer[index];
                 int newIndex = (int)MathEx.Modulo(index + value.Value, mixer.Length - 1);
                 
@@ -28,8 +28,23 @@ public abstract class Day20Base : Puzzle
             }
         }
 
-        var zero = Array.FindIndex(mixer, x => x.Value == 0);
+        // Array.FindIndex is pretty slow compared to a specialized method without lambdas.
+        // Just this changes improved the performance by a factor of two or more.
+        int FindIndexOfOriginalPosition(int pos)
+        {
+            for (int i = 0; i < mixer.Length; i++)
+            {
+                if (mixer[i].Position == pos)
+                {
+                    return i; 
+                }
+            }
 
+            return -1;
+        }
+
+        var zero = Array.FindIndex(mixer, x => x.Value == 0);
+        
         return mixer[(zero + 1000) % mixer.Length].Value +
                mixer[(zero + 2000) % mixer.Length].Value +
                mixer[(zero + 3000) % mixer.Length].Value;
