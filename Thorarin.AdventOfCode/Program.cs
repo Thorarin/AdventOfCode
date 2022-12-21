@@ -77,6 +77,8 @@ internal class Program
         {
             await runner.RunImplementation(puzzleType, options.Iterations, options.Warmup, options.RunExtraInputs);
         }
+
+        runner.AfterRuns();
     }
 
     private static IServiceProvider CreateServiceProvider()

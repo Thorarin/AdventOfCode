@@ -35,6 +35,10 @@ public abstract class RunnerBase
     {
     }
 
+    public virtual void AfterRuns()
+    {
+    }
+
     protected virtual async Task<RunResult> RunWarmup(Type type, PuzzleIdentifier identifier, string fileName, RunType runType)
     {
         return await Run(type, fileName, runType);

@@ -16,10 +16,15 @@ public class TableRunner : RunnerBase
         _nameWidth = types.Select(x => x.Name.Length).Append("Implementation".Length).Max();
 
         Console.WriteLine(new string('-', _timeWidth * 3 + _nameWidth + 25));
-        Console.WriteLine($"| Puzzle    | {"Implementation".PadLeft(_nameWidth)} | {"Sample".PadLeft(_timeWidth)} | {"Problem".PadLeft(_timeWidth)} | {"Average".PadLeft(_timeWidth)} |");
+        Console.WriteLine($"| Puzzle    | {"Implementation".PadRight(_nameWidth)} | {"Sample".PadLeft(_timeWidth)} | {"Problem".PadLeft(_timeWidth)} | {"Average".PadLeft(_timeWidth)} |");
         Console.WriteLine(new string('-', _timeWidth * 3 + _nameWidth + 25));
 
         RunContext.ConsoleOutput = false;
+    }
+
+    public override void AfterRuns()
+    {
+        Console.WriteLine(new string('-', _timeWidth * 3 + _nameWidth + 25));
     }
 
     protected override void BeforeRun(Type type, PuzzleIdentifier identifier)
@@ -40,8 +45,9 @@ public class TableRunner : RunnerBase
         else
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("ERROR".PadLeft(_timeWidth) + " | ");
+            Console.Write("ERROR".PadLeft(_timeWidth));
             Console.ResetColor();
+            Console.Write(" | ");
         }
 
         return result;
@@ -58,8 +64,9 @@ public class TableRunner : RunnerBase
         else
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("ERROR".PadLeft(_timeWidth) + " | ");
+            Console.Write("ERROR".PadLeft(_timeWidth));
             Console.ResetColor();
+            Console.Write(" | ");
         }
 
         return result;
