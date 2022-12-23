@@ -19,6 +19,13 @@ public class MathEx
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Modulo(int a, int b)
+    {
+        int tmp = a % b;
+        return tmp >= 0 ? tmp : tmp + b;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Modulo(long a, long b)
     {
         long tmp = a % b;

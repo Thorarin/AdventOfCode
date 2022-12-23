@@ -76,6 +76,9 @@ public static class TextReaderExtensions
         return null;
     }
 
+    /// <summary>
+    /// Reads until any of a set of characters is encountered.
+    /// </summary>
     public static string? ReadUntilExcluding(this TextReader reader, char[] until)
     {
         StringBuilder sb = new StringBuilder();

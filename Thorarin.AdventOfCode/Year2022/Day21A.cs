@@ -1,4 +1,5 @@
 ﻿using Thorarin.AdventOfCode.Framework;
+using Thorarin.AdventOfCode.Year2022.Day21;
 
 namespace Thorarin.AdventOfCode.Year2022;
 
@@ -11,6 +12,6 @@ public class Day21A : Day21Base
 
     public override Output Run()
     {
-        return GetMonkey("root").GetValue();
+        return GetMonkey("root")!.GetValue()!.Value;
     }
 }

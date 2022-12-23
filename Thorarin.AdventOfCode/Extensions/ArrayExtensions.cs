@@ -26,6 +26,11 @@ public static class ArrayExtensions
         }
     }
 
+    public static bool InBounds<T>(this T[,] array, int a, int b)
+    {
+        return a >= 0 && b >= 0 && a < array.GetLength(0) && b < array.GetLength(1);
+    }
+
     /// <summary>
     /// Removes an element from one position in an array, then inserts it in another.
     /// </summary>

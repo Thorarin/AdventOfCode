@@ -1,4 +1,6 @@
-﻿namespace Thorarin.AdventOfCode.Extensions;
+﻿using System.Net.Http.Headers;
+
+namespace Thorarin.AdventOfCode.Extensions;
 
 public static class DictionaryExtensions
 {
@@ -18,6 +20,18 @@ public static class DictionaryExtensions
         var newValue = dictionary.TryGetValue(key, out var value) ? updateValueFactory(value) : addValue;
         dictionary[key] = newValue;
         return newValue;
+    }
+
+    public static TValue GetOrAdd<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary, TKey key, TValue addValue)
+    {
+        if (!dictionary.TryGetValue(key, out var value))
+        {
+            dictionary.Add(key, addValue);
+            return addValue;
+        }
+
+        return value;
     }
     
     public static long Increment<TKey>(this IDictionary<TKey, long> dictionary, TKey key, long increment)
