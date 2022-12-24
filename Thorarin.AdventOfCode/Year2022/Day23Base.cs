@@ -63,7 +63,7 @@ public abstract class Day23Base : Puzzle
 
     protected (ISet<Pos> board, int rounds) Simulate(ISet<Pos> initial, int maxRounds)
     {
-        ISet<Pos> board = initial;
+        ISet<Pos> board = initial.ToHashSet();
 
         for (int round = 0; round < maxRounds; round++)
         {
@@ -73,9 +73,10 @@ public abstract class Day23Base : Puzzle
                 DetermineMove(elf, round, moves, board);
             }
 
-            var nextBoard = MakeBoard(moves);
-            if (nextBoard.SetEquals(board)) return (board, round + 1);
-            board = nextBoard;
+            if (!UpdateBoard(board, moves))
+            {
+                return (board, round + 1);
+            }
         }
 
         return (board, maxRounds);
@@ -85,11 +86,7 @@ public abstract class Day23Base : Puzzle
     {
         var adjacent = GetAdjacent(elf, board);
 
-        if (adjacent == 0)
-        {
-            AddMove(elf, elf);
-            return;
-        }
+        if (adjacent == 0) return;
 
         for (int rule = round; rule < round + 4; rule++)
         {
@@ -126,9 +123,8 @@ public abstract class Day23Base : Puzzle
             }
         }
 
-        AddMove(elf, elf);
         return;
-            
+           
         void AddMove(Pos from, Pos to)
         {
             moves.AddOrUpdate(to, new List<Pos> { from }, list =>
@@ -139,23 +135,21 @@ public abstract class Day23Base : Puzzle
         }
     }
 
-    private ISet<Pos> MakeBoard(Dictionary<Pos, List<Pos>> moves)
+    private bool UpdateBoard(ISet<Pos> board, Dictionary<Pos, List<Pos>> moves)
     {
-        var b = new HashSet<Pos>();
+        bool changed = false;
 
         foreach (var entry in moves)
         {
             if (entry.Value.Count == 1)
             {
-                b.Add(entry.Key);
-            }
-            else
-            {
-                b.AddRange(entry.Value);
+                board.Remove(entry.Value[0]);
+                board.Add(entry.Key);
+                changed = true;
             }
         }
 
-        return b;
+        return changed;
     }
 
     /// <summary>
