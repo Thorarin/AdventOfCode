@@ -101,11 +101,13 @@ public class MathEx
         if (pow < 0) throw new ArgumentOutOfRangeException(nameof(pow), pow, "Negative exponents are not supported.");
         
         int result = 1;
-        while (pow != 0)
+        while (true)
         {
             if ((pow & 1) == 1) result *= x;
-            x *= x;
+            
             pow >>= 1;
+            if (pow == 0) break;
+            x *= x;
         }
         return result;
     }
@@ -115,13 +117,14 @@ public class MathEx
         if (pow < 0) throw new ArgumentOutOfRangeException(nameof(pow), pow, "Negative exponents are not supported.");
         
         long result = 1;
-        while (pow != 0)
+        while (true)
         {
             if ((pow & 1) == 1) result *= x;
-            x *= x;
+
             pow >>= 1;
+            if (pow == 0) break;
+            x *= x;
         }
         return result;
-    }    
-
+    }
 }
